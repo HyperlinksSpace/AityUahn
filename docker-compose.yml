@@ -1,0 +1,30 @@
+services:
+  aityuahn:
+    build: .
+    image: aityuahn:local
+    env_file:
+      - .env
+    environment:
+      PYTHON_CONFIG: /config/forge.yaml
+      PYTHON_WORKSPACE_ROOT: /workspace
+    volumes:
+      - ./config/forge.yaml:/config/forge.yaml:ro
+      - ${WORKSPACE_ROOT:-C:/1/1/1/1/1}:/workspace
+      - forge-data:/data/.python
+    working_dir: /data
+    profiles: [cli]
+
+  aityuahn-watch:
+    build: .
+    image: aityuahn:local
+    env_file:
+      - .env
+    volumes:
+      - ./config/forge.yaml:/config/forge.yaml:ro
+      - ${WORKSPACE_ROOT:-C:/1/1/1/1/1}:/workspace
+      - forge-data:/data/.python
+    command: ["list"]
+    profiles: [watch]
+
+volumes:
+  forge-data:

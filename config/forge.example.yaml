@@ -1,0 +1,73 @@
+# Copy to forge.yaml at repo root (or set PYTHON_CONFIG).
+# Workspace: parent folder where HyperlinksSpaceProgram, TinyModel, etc. live.
+
+workspace_root: "C:/1/1/1/1/1"
+forge_data_dir: ".python"
+
+# Default provider for prompts; role-specific overrides optional.
+default_provider: claude
+idea_provider: claude
+backlog_provider: claude
+task_provider: cursor
+
+providers:
+  - id: claude
+    kind: claude
+    enabled: true
+    default: true
+    model: claude-sonnet-4-20250514
+    api_key_env: ANTHROPIC_API_KEY
+    options:
+      anthropic_version: "2023-06-01"
+
+  - id: cursor
+    kind: cursor
+    enabled: true
+    model: composer-2.5
+    api_key_env: CURSOR_API_KEY
+    base_url: https://api.cursor.com
+    options:
+      auth: bearer
+      # For OpenAI-compatible gateway in front of Cursor:
+      # completion_path: /v1/chat/completions
+      # Or use Cursor SDK via: scripts/run_cursor_agent.py (see README)
+
+  - id: openai
+    kind: openai_compat
+    enabled: false
+    model: gpt-4o-mini
+    api_key_env: OPENAI_API_KEY
+    base_url: https://api.openai.com/v1
+
+  - id: ollama
+    kind: openai_compat
+    enabled: false
+    model: llama3.2
+    base_url: http://127.0.0.1:11434/v1
+    # No api_key needed for local Ollama
+
+  - id: tinymodel
+    kind: http
+    enabled: false
+    model: smollm2
+    base_url: http://127.0.0.1:7860
+    options:
+      path: /api/chat
+      method: POST
+      response_json_path: text
+      body_template:
+        prompt: "{prompt}"
+      api_key_header: Authorization
+      api_key_prefix: "Bearer "
+
+project_template:
+  directories: [src, tests, docs, scripts]
+  readme_intro: ""
+  requirements: |
+    # Add project dependencies
+
+test_defaults:
+  python: pytest -q
+  node: npm test --if-present
+  fallback: echo "No tests configured"
+  projects: {}

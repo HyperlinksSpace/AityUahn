@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AityUahn — test UI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.25rem; }
+    section { margin: 1.25rem 0; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.85rem; }
+    input, textarea, select, button { font: inherit; width: 100%; padding: 0.4rem; }
+    button { width: auto; margin-top: 0.5rem; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 0.75rem; overflow: auto; font-size: 0.8rem; max-height: 280px; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .row button { flex: 1; min-width: 120px; }
+    .ok { color: #060; }
+    .err { color: #900; }
+  </style>
+</head>
+<body>
+  <h1>AityUahn test UI</h1>
+  <p>Backend: <code id="base"></code> · Data: <code id="paths">…</code></p>
+
+  <section>
+    <h2>Health</h2>
+    <button type="button" id="btnHealth">Refresh status</button>
+    <pre id="outHealth">—</pre>
+  </section>
+
+  <section>
+    <h2>Registry (ideas &amp; backlogs)</h2>
+    <button type="button" id="btnRegistry">Load registry</button>
+    <pre id="outRegistry">—</pre>
+  </section>
+
+  <section>
+    <h2>Create idea (AI)</h2>
+    <label>Prompt</label>
+    <textarea id="ideaPrompt" rows="3" placeholder="Describe a new project…"></textarea>
+    <label>Slug (optional)</label>
+    <input id="ideaSlug" placeholder="my-project" />
+    <button type="button" id="btnIdea">POST /api/idea</button>
+    <pre id="outIdea">—</pre>
+  </section>
+
+  <section>
+    <h2>Full forge (idea + backlog + scaffold)</h2>
+    <label>Prompt</label>
+    <textarea id="forgePrompt" rows="3" placeholder="Same as CLI: aityuahn forge &quot;…&quot;"></textarea>
+    <div class="row">
+      <label><input type="checkbox" id="forgeScaffold" checked /> Scaffold folder</label>
+      <label><input type="checkbox" id="forgeBacklog" checked /> Generate backlog</label>
+    </div>
+    <button type="button" id="btnForge">POST /api/forge</button>
+    <pre id="outForge">—</pre>
+  </section>
+
+  <section>
+    <h2>Backlog for slug</h2>
+    <input id="backlogSlug" placeholder="project-slug" />
+    <div class="row">
+      <button type="button" id="btnBacklog">GET backlog</button>
+      <button type="button" id="btnBacklogGen">Generate backlog (AI)</button>
+    </div>
+    <pre id="outBacklog">—</pre>
+  </section>
+
+  <script>
+    const base = location.origin;
+    document.getElementById("base").textContent = base;
+
+    async function api(path, opts = {}) {
+      const r = await fetch(base + path, {
+        headers: { "Content-Type": "application/json", ...opts.headers },
+        ...opts,
+      });
+      const text = await r.text();
+      let body;
+      try { body = JSON.parse(text); } catch { body = text; }
+      if (!r.ok) throw new Error(typeof body === "object" ? JSON.stringify(body) : body);
+      return body;
+    }
+
+    function show(id, data, ok = true) {
+      const el = document.getElementById(id);
+      el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      el.className = ok ? "ok" : "err";
+    }
+
+    document.getElementById("btnHealth").onclick = async () => {
+      try {
+        const d = await api("/api/health");
+        document.getElementById("paths").textContent = d.forge_data;
+        show("outHealth", d);
+      } catch (e) { show("outHealth", String(e), false); }
+    };
+
+    document.getElementById("btnRegistry").onclick = async () => {
+      try { show("outRegistry", await api("/api/registry")); }
+      catch (e) { show("outRegistry", String(e), false); }
+    };
+
+    document.getElementById("btnIdea").onclick = async () => {
+      const prompt = document.getElementById("ideaPrompt").value.trim();
+      if (!prompt) return alert("Enter a prompt");
+      const slug = document.getElementById("ideaSlug").value.trim() || null;
+      try {
+        show("outIdea", await api("/api/idea", {
+          method: "POST",
+          body: JSON.stringify({ prompt, slug }),
+        }));
+      } catch (e) { show("outIdea", String(e), false); }
+    };
+
+    document.getElementById("btnForge").onclick = async () => {
+      const prompt = document.getElementById("forgePrompt").value.trim();
+      if (!prompt) return alert("Enter a prompt");
+      try {
+        show("outForge", "Working… (may take a minute)");
+        show("outForge", await api("/api/forge", {
+          method: "POST",
+          body: JSON.stringify({
+            prompt,
+            scaffold: document.getElementById("forgeScaffold").checked,
+            generate_backlog: document.getElementById("forgeBacklog").checked,
+          }),
+        }));
+      } catch (e) { show("outForge", String(e), false); }
+    };
+
+    document.getElementById("btnBacklog").onclick = async () => {
+      const slug = document.getElementById("backlogSlug").value.trim();
+      if (!slug) return alert("Enter slug");
+      try { show("outBacklog", await api("/api/backlog/" + encodeURIComponent(slug))); }
+      catch (e) { show("outBacklog", String(e), false); }
+    };
+
+    document.getElementById("btnBacklogGen").onclick = async () => {
+      const slug = document.getElementById("backlogSlug").value.trim();
+      if (!slug) return alert("Enter slug");
+      try {
+        show("outBacklog", "Generating…");
+        show("outBacklog", await api("/api/backlog/generate", {
+          method: "POST",
+          body: JSON.stringify({ slug }),
+        }));
+      } catch (e) { show("outBacklog", String(e), false); }
+    };
+
+    document.getElementById("btnHealth").click();
+  </script>
+</body>
+</html>
