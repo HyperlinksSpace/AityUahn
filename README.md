@@ -96,12 +96,14 @@ aityuahn serve
 
 The **same controller** as `aityuahn serve` — kanban board, task list, forge pipeline, and agent prompts — runs on GitHub Pages. Pages hosts the UI; **agents and forge require a live API** (`aityuahn serve` locally or deployed to a cloud host).
 
-1. **Settings → Pages → Build and deployment → GitHub Actions**
-2. Push to `main` (workflow publishes `docs/`)
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from branch / root” — that renders `README.md` as plain text)
+2. Push to `main` (workflow `.github/workflows/pages.yml` publishes `docs/`)
 3. Open **https://hyperlinksspace.github.io/AityUahn/**
 4. Run `aityuahn serve` and connect **`http://127.0.0.1:8765`** (use a tunnel to reach localhost from the browser)
 
-**Views:** Kanban (drag statuses) · Task list (add/move tasks) · Forge & backlog (idea, forge, AI backlog, tests) · Agents (prompt any configured provider)
+**Hard refresh** if you still see the old README page: **Ctrl+Shift+R** (Windows/Linux) or **Cmd+Shift+R** (Mac).
+
+**Views:** Kanban · Task list · Forge & backlog · Agents · **Docs** (header menu)
 
 Offline demo mode previews kanban/task UI without an API.
 
