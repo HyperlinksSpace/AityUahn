@@ -3,116 +3,119 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AityUahn — dashboard</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 1.5rem auto; padding: 0 1rem; color: #1a1a1a; }
-    h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
-    h2 { font-size: 1rem; margin: 0 0 0.75rem; }
-    section { margin: 1.25rem 0; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
-    label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.85rem; }
-    input, textarea, select, button { font: inherit; width: 100%; padding: 0.4rem; }
-    button { width: auto; margin-top: 0.5rem; cursor: pointer; }
-    pre { background: #f4f4f4; padding: 0.75rem; overflow: auto; font-size: 0.8rem; max-height: 280px; }
-    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-    .row button { flex: 1; min-width: 120px; }
-    .ok { color: #060; }
-    .err { color: #900; }
-    .muted { color: #666; font-size: 0.9rem; }
-    .mode-banner { font-size: 0.85rem; padding: 0.45rem 0.65rem; border-radius: 6px; margin: 0.5rem 0 0; }
-    .mode-live { background: #d4edda; color: #155724; }
-    .mode-static { background: #e7f1ff; color: #0b3d74; }
-    .mode-loading { background: #f4f4f4; color: #444; }
-    .summary-bar { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
-    .summary-bar span { font-size: 0.95rem; }
-    .summary-bar strong { font-size: 1.2rem; }
-    .project-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.85rem; margin: 0.75rem 0; background: #fafafa; }
-    .project-card h3 { margin: 0 0 0.35rem; font-size: 1rem; }
-    .project-card .slug { font-size: 0.8rem; color: #666; }
-    .progress-wrap { background: #e8e8e8; border-radius: 999px; height: 10px; margin: 0.5rem 0; overflow: hidden; }
-    .progress-fill { background: linear-gradient(90deg, #2a7, #1a6); height: 100%; transition: width 0.25s; }
-    .status-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0.5rem 0; }
-    .chip { font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 999px; background: #eee; }
-    .chip.done { background: #d4edda; }
-    .chip.in_progress { background: #fff3cd; }
-    .chip.blocked { background: #f8d7da; }
-    .task-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.5rem; }
-    .task-table th, .task-table td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid #e0e0e0; }
-    .task-table button { margin: 0; padding: 0.2rem 0.45rem; font-size: 0.75rem; }
-    .task-actions { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-  </style>
+  <title>AityUahn — Forge Controller</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>AityUahn dashboard</h1>
-  <p class="muted">Backend: <code id="base"></code> · Data: <code id="paths">…</code></p>
-  <p id="modeBanner" class="mode-banner mode-loading">Connecting…</p>
-
-  <section>
-    <h2>Connect to local API (optional)</h2>
-    <p class="muted">On GitHub Pages the dashboard runs as a static demo. Point this at a running <code>aityuahn serve</code> for live forge data.</p>
-    <label for="apiBaseInput">API base URL</label>
-    <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
-    <div class="row">
-      <button type="button" id="btnConnect">Connect</button>
-      <button type="button" id="btnResetDemo">Reset demo task changes</button>
+  <header class="app-header">
+    <div>
+      <h1>AityUahn Forge Controller</h1>
+      <p class="muted">Kanban · backlog · agents · forge pipeline</p>
     </div>
-  </section>
+    <span id="statusPill" class="status-pill">Connecting…</span>
+  </header>
 
-  <section id="dashboardSection">
-    <div class="row">
-      <h2 style="flex:1;margin:0">Projects &amp; burndown</h2>
-      <button type="button" id="btnDashboard">Refresh dashboard</button>
+  <div class="connect-bar">
+    <div style="flex:1;min-width:200px">
+      <label for="apiBaseInput">API backend (required for agents &amp; forge on GitHub Pages)</label>
+      <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
     </div>
-    <div class="summary-bar" id="summaryBar">Loading…</div>
-    <div id="projectCards"></div>
-  </section>
-
-  <section>
-    <h2>Health</h2>
-    <button type="button" id="btnHealth">Refresh status</button>
-    <pre id="outHealth">—</pre>
-  </section>
-
-  <section>
-    <h2>Registry (ideas &amp; backlogs)</h2>
-    <button type="button" id="btnRegistry">Load registry</button>
-    <pre id="outRegistry">—</pre>
-  </section>
-
-  <div id="apiPanels">
-    <section>
-      <h2>Create idea (AI)</h2>
-      <label>Prompt</label>
-      <textarea id="ideaPrompt" rows="3" placeholder="Describe a new project…"></textarea>
-      <label>Slug (optional)</label>
-      <input id="ideaSlug" placeholder="my-project" />
-      <button type="button" id="btnIdea">POST /api/idea</button>
-      <pre id="outIdea">—</pre>
-    </section>
-
-    <section>
-      <h2>Full forge (idea + backlog + scaffold)</h2>
-      <label>Prompt</label>
-      <textarea id="forgePrompt" rows="3" placeholder="Same as CLI: aityuahn forge &quot;…&quot;"></textarea>
-      <div class="row">
-        <label><input type="checkbox" id="forgeScaffold" checked /> Scaffold folder</label>
-        <label><input type="checkbox" id="forgeBacklog" checked /> Generate backlog</label>
-      </div>
-      <button type="button" id="btnForge">POST /api/forge</button>
-      <pre id="outForge">—</pre>
-    </section>
-
-    <section>
-      <h2>Backlog for slug</h2>
-      <input id="backlogSlug" placeholder="project-slug" value="demo-dashboard" />
-      <div class="row">
-        <button type="button" id="btnBacklog">GET backlog</button>
-        <button type="button" id="btnBacklogGen">Generate backlog (AI)</button>
-      </div>
-      <pre id="outBacklog">—</pre>
-    </section>
+    <button type="button" id="btnConnect" class="primary">Connect</button>
+    <button type="button" id="btnDemoMode">Offline demo</button>
   </div>
 
-  <script src="/static/app.js"></script>
+  <div id="blockedOverlay" class="blocked-overlay hidden">
+    <div class="blocked-card">
+      <h2 style="margin-top:0">Connect your AityUahn API</h2>
+      <p class="muted">GitHub Pages hosts the UI only. Run <code>aityuahn serve</code> locally (or deploy the API to a cloud host) and paste the URL above. Use a tunnel (Cloudflare, ngrok) to reach a local server from the web.</p>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" id="btnOverlayConnect" class="primary">Connect</button>
+        <button type="button" id="btnOverlayDemo">Try offline demo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <h2>Projects</h2>
+      <ul id="projectList" class="project-list"></ul>
+      <p class="muted" id="sidebarHint">Connect API to list projects</p>
+    </aside>
+
+    <main class="main">
+      <div class="view-tabs">
+        <button type="button" data-view="kanban" class="active">Kanban</button>
+        <button type="button" data-view="tasks">Task list</button>
+        <button type="button" data-view="forge">Forge &amp; backlog</button>
+        <button type="button" data-view="agents">Agents</button>
+      </div>
+
+      <div class="summary-row" id="summaryRow"></div>
+
+      <section id="viewKanban" class="view">
+        <div id="kanbanBoard" class="kanban"></div>
+      </section>
+
+      <section id="viewTasks" class="view hidden">
+        <div class="panel">
+          <h3>Add task</h3>
+          <label>Title</label>
+          <input id="taskTitle" placeholder="Implement auth middleware" />
+          <label>Description</label>
+          <textarea id="taskDesc" rows="2" placeholder="Optional details"></textarea>
+          <button type="button" id="btnAddTask" class="primary" style="margin-top:0.75rem">Add task</button>
+        </div>
+        <div id="taskTableWrap"></div>
+      </section>
+
+      <section id="viewForge" class="view hidden">
+        <div class="panel">
+          <h3>Full forge (idea → backlog → scaffold)</h3>
+          <label>Project prompt</label>
+          <textarea id="forgePrompt" rows="3" placeholder="Describe the project to forge…"></textarea>
+          <label>Slug (optional)</label>
+          <input id="forgeSlug" placeholder="my-project" />
+          <div class="row" style="margin-top:0.5rem">
+            <label><input type="checkbox" id="forgeScaffold" checked /> Scaffold folder</label>
+            <label><input type="checkbox" id="forgeBacklog" checked /> AI backlog</label>
+          </div>
+          <button type="button" id="btnForge" class="primary" style="margin-top:0.75rem">Run forge</button>
+          <div id="outForge" class="output-box hidden"></div>
+        </div>
+        <div class="panel">
+          <h3>Backlog for selected project</h3>
+          <div class="row">
+            <button type="button" id="btnBacklogRefresh">Refresh backlog</button>
+            <button type="button" id="btnBacklogGen" class="primary">Generate backlog (AI)</button>
+            <button type="button" id="btnRunTests">Run project tests</button>
+          </div>
+          <div id="outBacklog" class="output-box hidden"></div>
+        </div>
+        <div class="panel">
+          <h3>Create idea only</h3>
+          <textarea id="ideaPrompt" rows="2" placeholder="Idea prompt…"></textarea>
+          <button type="button" id="btnIdea" style="margin-top:0.5rem">Generate idea</button>
+          <div id="outIdea" class="output-box hidden"></div>
+        </div>
+      </section>
+
+      <section id="viewAgents" class="view hidden">
+        <div class="panel">
+          <h3>Agent prompt</h3>
+          <label>Provider</label>
+          <select id="agentProvider"></select>
+          <label>System (optional)</label>
+          <input id="agentSystem" placeholder="You are a senior engineer…" />
+          <label>Prompt</label>
+          <textarea id="agentPrompt" rows="4" placeholder="Ask the configured AI provider…"></textarea>
+          <button type="button" id="btnAgentSend" class="primary" style="margin-top:0.75rem">Send to agent</button>
+          <div id="outAgent" class="output-box hidden"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>

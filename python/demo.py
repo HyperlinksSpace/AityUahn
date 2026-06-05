@@ -82,8 +82,12 @@ def demo_dashboard_payload() -> dict:
                     {
                         "id": t.id,
                         "title": t.title,
+                        "description": t.description,
                         "status": t.status.value,
                         "priority": t.priority,
+                        "labels": t.labels,
+                        "depends_on": t.depends_on,
+                        "test_command": t.test_command,
                     }
                     for t in sorted(backlog.tasks, key=lambda x: (-x.priority, x.created_at))
                 ],

@@ -92,17 +92,18 @@ aityuahn serve
 - **UI:** forge / idea / backlog panels for API testing
 - **API:** `/api/dashboard`, `/api/health`, `/api/registry`, `/api/idea`, `/api/forge`, … — OpenAPI at `/docs`
 
-### GitHub Pages (static demo)
+### GitHub Pages (forge controller UI)
 
-The dashboard also runs on **GitHub Pages** as a static site (demo data + browser-local task changes). Live forge/AI features require a local API.
+The **same controller** as `aityuahn serve` — kanban board, task list, forge pipeline, and agent prompts — runs on GitHub Pages. Pages hosts the UI; **agents and forge require a live API** (`aityuahn serve` locally or deployed to a cloud host).
 
-1. In the repo: **Settings → Pages → Build and deployment → GitHub Actions**
-2. Push to `main` (workflow `.github/workflows/pages.yml` publishes `docs/`)
+1. **Settings → Pages → Build and deployment → GitHub Actions**
+2. Push to `main` (workflow publishes `docs/`)
 3. Open **https://hyperlinksspace.github.io/AityUahn/**
+4. Run `aityuahn serve` and connect **`http://127.0.0.1:8765`** (use a tunnel to reach localhost from the browser)
 
-To connect the hosted UI to your machine, run `aityuahn serve` and enter `http://127.0.0.1:8765` in **Connect to local API** (CORS is enabled). Or use `?api=http://127.0.0.1:8765` in the URL.
+**Views:** Kanban (drag statuses) · Task list (add/move tasks) · Forge & backlog (idea, forge, AI backlog, tests) · Agents (prompt any configured provider)
 
-Rebuild pages locally:
+Offline demo mode previews kanban/task UI without an API.
 
 ```bash
 python scripts/build_pages.py

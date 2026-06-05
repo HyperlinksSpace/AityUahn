@@ -50,6 +50,12 @@ class TestRunRequest(BaseModel):
     command: str | None = None
 
 
+class PromptRequest(BaseModel):
+    text: str
+    provider_id: str | None = None
+    system: str | None = None
+
+
 def create_app(forge: LForge | None = None) -> FastAPI:
     engine = forge or LForge()
     app = FastAPI(title="AityUahn API", version="0.1.0")
@@ -140,6 +146,14 @@ def create_app(forge: LForge | None = None) -> FastAPI:
         except KeyError as e:
             raise HTTPException(404, str(e)) from e
         return task.model_dump(mode="json")
+
+    @app.post("/api/prompt")
+    async def agent_prompt(body: PromptRequest) -> dict[str, Any]:
+        provider_id = body.provider_id or engine.config.default_provider
+        text = await engine.complete_prompt(
+            body.text, system=body.system, provider_id=body.provider_id
+        )
+        return {"text": text, "provider": provider_id}
 
     @app.post("/api/test/{slug}")
     async def run_tests(slug: str, body: TestRunRequest | None = None) -> dict[str, Any]:

@@ -16,8 +16,14 @@ DOCS = ROOT / "docs"
 
 def build_pages() -> None:
     DOCS.mkdir(parents=True, exist_ok=True)
-    for name in ("index.html", "app.js"):
-        shutil.copy2(STATIC / name, DOCS / name)
+    for name in ("index.html", "app.js", "styles.css", "config.json"):
+        src = STATIC / name
+        dst = DOCS / name
+        if name == "index.html":
+            text = src.read_text(encoding="utf-8").replace("/static/", "")
+            dst.write_text(text, encoding="utf-8")
+        else:
+            shutil.copy2(src, dst)
     (DOCS / "demo-data.json").write_text(
         json.dumps(demo_dashboard_payload(), indent=2),
         encoding="utf-8",

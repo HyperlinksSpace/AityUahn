@@ -130,15 +130,22 @@ class BacklogService:
         return {
             "project": slug,
             "progress": p,
-            "tasks": [
-                {
-                    "id": t.id,
-                    "title": t.title,
-                    "status": t.status.value,
-                    "priority": t.priority,
-                }
-                for t in sorted(backlog.tasks, key=lambda x: (-x.priority, x.created_at))
-            ],
+            "tasks": [self._task_dict(t) for t in self._sorted_tasks(backlog)],
+        }
+
+    def _sorted_tasks(self, backlog: ProjectBacklog) -> list[BacklogTask]:
+        return sorted(backlog.tasks, key=lambda x: (-x.priority, x.created_at))
+
+    def _task_dict(self, task: BacklogTask) -> dict:
+        return {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "status": task.status.value,
+            "priority": task.priority,
+            "labels": task.labels,
+            "depends_on": task.depends_on,
+            "test_command": task.test_command,
         }
 
 
