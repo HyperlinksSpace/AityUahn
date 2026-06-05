@@ -17,11 +17,13 @@ def test_build_pages(tmp_path: Path, monkeypatch):
     build_pages.build_pages()
     docs = tmp_path / "docs"
     assert (docs / "index.html").is_file()
+    assert (docs / "docs.html").is_file()
     assert (docs / "app.js").is_file()
     assert (docs / "styles.css").is_file()
     assert (docs / "config.json").is_file()
     assert (docs / "demo-data.json").is_file()
     assert (docs / ".nojekyll").is_file()
     index = (docs / "index.html").read_text(encoding="utf-8")
-    assert "/static/" not in index
-    assert 'href="styles.css"' in index
+    assert '<base href="/AityUahn/">' in index
+    assert 'href="/AityUahn/docs.html"' in index
+    assert 'src="/AityUahn/app.js"' in index

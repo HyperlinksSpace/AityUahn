@@ -174,6 +174,14 @@ def create_app(forge: LForge | None = None) -> FastAPI:
 
         return demo_dashboard_payload()
 
+    @app.get("/index.html")
+    def index_html() -> FileResponse:
+        return FileResponse(STATIC_DIR / "index.html")
+
+    @app.get("/docs.html")
+    def docs_html() -> FileResponse:
+        return FileResponse(STATIC_DIR / "docs.html")
+
     @app.get("/")
     def ui() -> FileResponse:
         index = STATIC_DIR / "index.html"

@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base href="/AityUahn/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AityUahn — Forge Controller</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/AityUahn/styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div>
       <h1>AityUahn Forge Controller</h1>
-      <p class="muted">Kanban · backlog · agents · forge pipeline</p>
+      <nav class="header-nav">
+        <a href="/AityUahn/index.html" class="active">Controller</a>
+        <a href="/AityUahn/docs.html">Docs</a>
+      </nav>
     </div>
     <span id="statusPill" class="status-pill">Connecting…</span>
   </header>
@@ -116,6 +120,6 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="app.js"></script>
+  <script src="/AityUahn/app.js"></script>
 </body>
 </html>

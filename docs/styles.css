@@ -56,6 +56,17 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   background: var(--panel);
 }
 .app-header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.header-nav { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
+.header-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+.header-nav a:hover { color: var(--text); border-color: var(--border); }
+.header-nav a.active { color: #fff; background: var(--accent); border-color: var(--accent); }
 .status-pill {
   font-size: 0.78rem;
   padding: 0.25rem 0.55rem;
@@ -221,6 +232,20 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
 }
 .toast.show { opacity: 1; }
 .toast.error { border-color: var(--danger); }
+
+.docs-page { max-width: 820px; margin: 0 auto; padding: 1.25rem; }
+.docs-page h2 { margin-top: 1.5rem; font-size: 1.05rem; }
+.docs-page h2:first-child { margin-top: 0; }
+.docs-page p, .docs-page li { line-height: 1.55; color: var(--text); }
+.docs-page code { background: var(--panel-2); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.88em; }
+.docs-page pre {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  overflow: auto;
+  font-size: 0.82rem;
+}
 
 .blocked-overlay {
   position: fixed;

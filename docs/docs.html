@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/AityUahn/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AityUahn — Docs</title>
+  <link rel="stylesheet" href="/AityUahn/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>AityUahn</h1>
+      <nav class="header-nav">
+        <a href="/AityUahn/index.html">Controller</a>
+        <a href="/AityUahn/docs.html" class="active">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <article class="docs-page">
+    <h2>Quick start</h2>
+    <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="/AityUahn/index.html">Controller</a> for kanban, tasks, forge, and agents.</p>
+
+    <h2>GitHub Pages + local API</h2>
+    <p>Pages hosts the UI only. Run the API on your machine:</p>
+    <pre>cd AityUahn
+python -m venv .venv
+source .venv/Scripts/activate   # Windows Git Bash
+pip install -e ".[dev]"
+cp config/forge.example.yaml forge.yaml
+aityuahn serve</pre>
+    <p>Open the <a href="/AityUahn/index.html">Controller</a>, paste <code>http://127.0.0.1:8765</code>, and click <strong>Connect</strong>. From another device use a tunnel (Cloudflare, ngrok) and paste that URL instead.</p>
+
+    <h2>Controller views</h2>
+    <ul>
+      <li><strong>Kanban</strong> — move tasks across backlog, in progress, review, blocked, done</li>
+      <li><strong>Task list</strong> — add tasks, change status</li>
+      <li><strong>Forge &amp; backlog</strong> — full forge, AI backlog, run tests</li>
+      <li><strong>Agents</strong> — send prompts to configured providers</li>
+    </ul>
+
+    <h2>CLI (same backend)</h2>
+    <pre>aityuahn forge "A tiny HTTP service for embeddings"
+aityuahn backlog my-project --generate
+aityuahn task my-project add "Add CI"
+aityuahn task my-project done --id T-xxxxxxxx
+aityuahn test my-project</pre>
+
+    <h2>Configuration</h2>
+    <p>Edit <code>forge.yaml</code> for workspace path, AI providers (Claude, Cursor, Ollama, etc.), and role routing. API keys go in <code>.env</code> — never commit secrets.</p>
+
+    <h2>Repository</h2>
+    <p><a href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a></p>
+  </article>
+</body>
+</html>

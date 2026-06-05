@@ -31,10 +31,22 @@ au = "python.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["python"]
-include = ["python/static/index.html", "python/static/app.js", "python/static/styles.css", "python/static/config.json"]
+include = [
+  "python/static/index.html",
+  "python/static/docs.html",
+  "python/static/app.js",
+  "python/static/styles.css",
+  "python/static/config.json",
+]
 
 [tool.hatch.build.targets.sdist]
-include = ["python/static/index.html", "python/static/app.js", "python/static/styles.css", "python/static/config.json"]
+include = [
+  "python/static/index.html",
+  "python/static/docs.html",
+  "python/static/app.js",
+  "python/static/styles.css",
+  "python/static/config.json",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
