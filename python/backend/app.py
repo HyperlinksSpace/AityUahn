@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -52,6 +53,12 @@ class TestRunRequest(BaseModel):
 def create_app(forge: LForge | None = None) -> FastAPI:
     engine = forge or LForge()
     app = FastAPI(title="AityUahn API", version="0.1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.get("/api/health")
     def health() -> dict[str, Any]:
@@ -146,6 +153,12 @@ def create_app(forge: LForge | None = None) -> FastAPI:
             "backlog": engine.backlog.progress_report(slug),
             "tests": engine.testing.summary(slug),
         }
+
+    @app.get("/demo-data.json")
+    def demo_data() -> dict[str, Any]:
+        from python.demo import demo_dashboard_payload
+
+        return demo_dashboard_payload()
 
     @app.get("/")
     def ui() -> FileResponse:

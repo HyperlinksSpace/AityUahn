@@ -1,0 +1,60 @@
+{
+  "workspace": "(GitHub Pages demo)",
+  "forge_data": "(static demo-data.json + browser storage)",
+  "summary": {
+    "projects": 1,
+    "tasks": 4,
+    "done": 1,
+    "percent": 25.0
+  },
+  "projects": [
+    {
+      "slug": "demo-dashboard",
+      "title": "Demo Dashboard Project",
+      "summary": "Sample forged project to explore the AityUahn dashboard and backlog UI.",
+      "tags": [
+        "demo",
+        "dashboard"
+      ],
+      "registered": true,
+      "progress": {
+        "total": 4,
+        "done": 1,
+        "percent": 25.0,
+        "idea": 0,
+        "backlog": 2,
+        "in_progress": 1,
+        "blocked": 0,
+        "review": 0,
+        "cancelled": 0
+      },
+      "tasks": [
+        {
+          "id": "T-demo0001",
+          "title": "Initialize repository",
+          "status": "done",
+          "priority": 90
+        },
+        {
+          "id": "T-demo0002",
+          "title": "Add dashboard API",
+          "status": "in_progress",
+          "priority": 85
+        },
+        {
+          "id": "T-demo0003",
+          "title": "Wire task status controls",
+          "status": "backlog",
+          "priority": 80
+        },
+        {
+          "id": "T-demo0004",
+          "title": "Document roadmap progress",
+          "status": "backlog",
+          "priority": 70
+        }
+      ],
+      "last_test": null
+    }
+  ]
+}

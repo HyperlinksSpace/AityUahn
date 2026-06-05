@@ -43,6 +43,10 @@ def test_health_and_ui(tmp_path: Path):
     assert "aityuahn" in r.text.lower()
     assert "dashboard" in r.text.lower()
 
+    r = client.get("/demo-data.json")
+    assert r.status_code == 200
+    assert r.json()["projects"][0]["slug"] == "demo-dashboard"
+
 
 def test_dashboard_and_task_status(tmp_path: Path):
     forge = _test_forge(tmp_path)

@@ -92,6 +92,22 @@ aityuahn serve
 - **UI:** forge / idea / backlog panels for API testing
 - **API:** `/api/dashboard`, `/api/health`, `/api/registry`, `/api/idea`, `/api/forge`, … — OpenAPI at `/docs`
 
+### GitHub Pages (static demo)
+
+The dashboard also runs on **GitHub Pages** as a static site (demo data + browser-local task changes). Live forge/AI features require a local API.
+
+1. In the repo: **Settings → Pages → Build and deployment → GitHub Actions**
+2. Push to `main` (workflow `.github/workflows/pages.yml` publishes `docs/`)
+3. Open **https://hyperlinksspace.github.io/AityUahn/**
+
+To connect the hosted UI to your machine, run `aityuahn serve` and enter `http://127.0.0.1:8765` in **Connect to local API** (CORS is enabled). Or use `?api=http://127.0.0.1:8765` in the URL.
+
+Rebuild pages locally:
+
+```bash
+python scripts/build_pages.py
+```
+
 ---
 
 ## Architecture

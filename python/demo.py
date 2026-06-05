@@ -6,23 +6,8 @@ from python.storage import ForgeStorage
 DEMO_SLUG = "demo-dashboard"
 
 
-def seed_demo_data(storage: ForgeStorage) -> str:
-    """Create a sample idea + backlog for UI demos when forge data is empty."""
-    if storage.backlog_path(DEMO_SLUG).is_file():
-        return DEMO_SLUG
-
-    idea = ProjectIdea(
-        slug=DEMO_SLUG,
-        title="Demo Dashboard Project",
-        summary="Sample forged project to explore the AityUahn dashboard and backlog UI.",
-        vision="Show progress bars, task statuses, and test history without calling AI providers.",
-        constraints=["Local-only demo data", "Safe to delete from .python/backlogs/"],
-        success_criteria=["Dashboard loads with mixed task statuses", "Task actions update progress"],
-        tags=["demo", "dashboard"],
-    )
-    storage.save_idea(idea)
-
-    backlog = ProjectBacklog(
+def _demo_backlog() -> ProjectBacklog:
+    return ProjectBacklog(
         project_slug=DEMO_SLUG,
         tasks=[
             BacklogTask(
@@ -57,6 +42,64 @@ def seed_demo_data(storage: ForgeStorage) -> str:
             ),
         ],
     )
-    storage.save_backlog(backlog)
+
+
+def _demo_idea() -> ProjectIdea:
+    return ProjectIdea(
+        slug=DEMO_SLUG,
+        title="Demo Dashboard Project",
+        summary="Sample forged project to explore the AityUahn dashboard and backlog UI.",
+        vision="Show progress bars, task statuses, and test history without calling AI providers.",
+        constraints=["Local-only demo data", "Safe to delete from .python/backlogs/"],
+        success_criteria=["Dashboard loads with mixed task statuses", "Task actions update progress"],
+        tags=["demo", "dashboard"],
+    )
+
+
+def demo_dashboard_payload() -> dict:
+    """Dashboard JSON for GitHub Pages static demo (matches GET /api/dashboard shape)."""
+    idea = _demo_idea()
+    backlog = _demo_backlog()
+    progress = backlog.progress
+    return {
+        "workspace": "(GitHub Pages demo)",
+        "forge_data": "(static demo-data.json + browser storage)",
+        "summary": {
+            "projects": 1,
+            "tasks": progress["total"],
+            "done": progress["done"],
+            "percent": progress["percent"],
+        },
+        "projects": [
+            {
+                "slug": DEMO_SLUG,
+                "title": idea.title,
+                "summary": idea.summary,
+                "tags": idea.tags,
+                "registered": True,
+                "progress": progress,
+                "tasks": [
+                    {
+                        "id": t.id,
+                        "title": t.title,
+                        "status": t.status.value,
+                        "priority": t.priority,
+                    }
+                    for t in sorted(backlog.tasks, key=lambda x: (-x.priority, x.created_at))
+                ],
+                "last_test": None,
+            }
+        ],
+    }
+
+
+def seed_demo_data(storage: ForgeStorage) -> str:
+    """Create a sample idea + backlog for UI demos when forge data is empty."""
+    if storage.backlog_path(DEMO_SLUG).is_file():
+        return DEMO_SLUG
+
+    idea = _demo_idea()
+    storage.save_idea(idea)
+    storage.save_backlog(_demo_backlog())
     storage.register_project(DEMO_SLUG, idea.title)
     return DEMO_SLUG
