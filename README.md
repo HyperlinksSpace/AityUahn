@@ -85,10 +85,12 @@ Runs a small **FastAPI** server over your `.python` data:
 ```bash
 aityuahn serve
 # open http://127.0.0.1:8765/
+# first run auto-seeds demo data when no backlogs exist; use --demo to force re-seed check
 ```
 
-- **UI:** `/` — buttons to hit health, registry, create idea, full forge, backlog
-- **API:** `/api/health`, `/api/registry`, `/api/idea`, `/api/forge`, … — OpenAPI at `/docs`
+- **Dashboard:** `/` — project cards, progress bars, task start/done controls
+- **UI:** forge / idea / backlog panels for API testing
+- **API:** `/api/dashboard`, `/api/health`, `/api/registry`, `/api/idea`, `/api/forge`, … — OpenAPI at `/docs`
 
 ---
 
@@ -187,7 +189,7 @@ AityUahn/
 | `aityuahn test <slug> [--command "..."]` | Run tests; record on backlog. |
 | `aityuahn prompt "<text>"` | One-off completion via default provider. |
 | `aityuahn providers` | List configured providers. |
-| `aityuahn serve` | HTTP API + browser test UI (default port 8765). |
+| `aityuahn serve [--demo]` | HTTP API + dashboard UI (default port 8765). |
 
 Global option: `--config path/to/forge.yaml`
 
@@ -377,7 +379,7 @@ ruff check aityuahn tests
 
 This release is **v0.1 foundation**. Planned extensions:
 
-- [ ] Web UI / Canvas dashboard for ideas and burndown
+- [x] Web UI dashboard for ideas, progress, and task controls
 - [ ] Git init + remote create on scaffold
 - [ ] Task execution worker (queue + provider per task)
 - [ ] Cursor Cloud Agents polling (`/v1/agents`) built into CLI

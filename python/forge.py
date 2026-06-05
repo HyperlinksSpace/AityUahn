@@ -69,3 +69,46 @@ class LForge:
             "backlogs": self.storage.list_backlogs(),
             "registry": reg.get("projects", []),
         }
+
+    def dashboard(self) -> dict:
+        """Aggregate progress across ideas, backlogs, and recent test runs."""
+        reg = {p["slug"]: p for p in self.storage.load_registry().get("projects", [])}
+        slugs = sorted(
+            set(self.storage.list_backlogs()) | {i.slug for i in self.storage.list_ideas()}
+        )
+        projects: list[dict] = []
+        totals = {"tasks": 0, "done": 0}
+
+        for slug in slugs:
+            idea = self.storage.load_idea(slug)
+            report = self.backlog.progress_report(slug)
+            progress = report["progress"]
+            totals["tasks"] += progress["total"]
+            totals["done"] += progress["done"]
+
+            last_runs = self.testing.summary(slug)["last_runs"]
+            projects.append(
+                {
+                    "slug": slug,
+                    "title": idea.title if idea else reg.get(slug, {}).get("title", slug),
+                    "summary": idea.summary if idea else "",
+                    "tags": idea.tags if idea else [],
+                    "registered": slug in reg,
+                    "progress": progress,
+                    "tasks": report["tasks"],
+                    "last_test": last_runs[-1] if last_runs else None,
+                }
+            )
+
+        total_tasks = totals["tasks"]
+        return {
+            "workspace": str(self.config.workspace_root),
+            "forge_data": str(self.config.forge_data_dir),
+            "summary": {
+                "projects": len(projects),
+                "tasks": total_tasks,
+                "done": totals["done"],
+                "percent": round(100 * totals["done"] / total_tasks, 1) if total_tasks else 0.0,
+            },
+            "projects": projects,
+        }

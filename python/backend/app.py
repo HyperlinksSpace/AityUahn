@@ -6,7 +6,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from python.forge import LForge
 from python.models import TaskStatus
@@ -45,6 +45,10 @@ class TaskStatusRequest(BaseModel):
     status: TaskStatus
 
 
+class TestRunRequest(BaseModel):
+    command: str | None = None
+
+
 def create_app(forge: LForge | None = None) -> FastAPI:
     engine = forge or LForge()
     app = FastAPI(title="AityUahn API", version="0.1.0")
@@ -61,6 +65,10 @@ def create_app(forge: LForge | None = None) -> FastAPI:
     @app.get("/api/registry")
     def registry() -> dict[str, Any]:
         return engine.list_all()
+
+    @app.get("/api/dashboard")
+    def dashboard() -> dict[str, Any]:
+        return engine.dashboard()
 
     @app.get("/api/providers")
     def providers() -> list[dict[str, Any]]:
@@ -125,6 +133,19 @@ def create_app(forge: LForge | None = None) -> FastAPI:
         except KeyError as e:
             raise HTTPException(404, str(e)) from e
         return task.model_dump(mode="json")
+
+    @app.post("/api/test/{slug}")
+    async def run_tests(slug: str, body: TestRunRequest | None = None) -> dict[str, Any]:
+        command = body.command if body else None
+        try:
+            run = await engine.testing.run(slug, command=command)
+        except ValueError as e:
+            raise HTTPException(400, str(e)) from e
+        return {
+            "run": run.model_dump(mode="json"),
+            "backlog": engine.backlog.progress_report(slug),
+            "tests": engine.testing.summary(slug),
+        }
 
     @app.get("/")
     def ui() -> FileResponse:

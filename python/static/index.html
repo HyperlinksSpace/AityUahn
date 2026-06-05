@@ -2,25 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AityUahn — test UI</title>
+  <title>AityUahn — dashboard</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 1.5rem auto; padding: 0 1rem; }
-    h1 { font-size: 1.25rem; }
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 1.5rem auto; padding: 0 1rem; color: #1a1a1a; }
+    h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1rem; margin: 0 0 0.75rem; }
     section { margin: 1.25rem 0; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
     label { display: block; margin: 0.5rem 0 0.2rem; font-size: 0.85rem; }
     input, textarea, select, button { font: inherit; width: 100%; padding: 0.4rem; }
     button { width: auto; margin-top: 0.5rem; cursor: pointer; }
     pre { background: #f4f4f4; padding: 0.75rem; overflow: auto; font-size: 0.8rem; max-height: 280px; }
-    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
     .row button { flex: 1; min-width: 120px; }
     .ok { color: #060; }
     .err { color: #900; }
+    .muted { color: #666; font-size: 0.9rem; }
+    .summary-bar { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0.75rem 0; }
+    .summary-bar span { font-size: 0.95rem; }
+    .summary-bar strong { font-size: 1.2rem; }
+    .project-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.85rem; margin: 0.75rem 0; background: #fafafa; }
+    .project-card h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+    .project-card .slug { font-size: 0.8rem; color: #666; }
+    .progress-wrap { background: #e8e8e8; border-radius: 999px; height: 10px; margin: 0.5rem 0; overflow: hidden; }
+    .progress-fill { background: linear-gradient(90deg, #2a7, #1a6); height: 100%; transition: width 0.25s; }
+    .status-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0.5rem 0; }
+    .chip { font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 999px; background: #eee; }
+    .chip.done { background: #d4edda; }
+    .chip.in_progress { background: #fff3cd; }
+    .chip.blocked { background: #f8d7da; }
+    .task-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.5rem; }
+    .task-table th, .task-table td { text-align: left; padding: 0.35rem 0.4rem; border-bottom: 1px solid #e0e0e0; }
+    .task-table button { margin: 0; padding: 0.2rem 0.45rem; font-size: 0.75rem; }
+    .task-actions { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    details summary { cursor: pointer; font-size: 0.85rem; color: #444; }
   </style>
 </head>
 <body>
-  <h1>AityUahn test UI</h1>
-  <p>Backend: <code id="base"></code> · Data: <code id="paths">…</code></p>
+  <h1>AityUahn dashboard</h1>
+  <p class="muted">Backend: <code id="base"></code> · Data: <code id="paths">…</code></p>
+
+  <section id="dashboardSection">
+    <div class="row">
+      <h2 style="flex:1;margin:0">Projects &amp; burndown</h2>
+      <button type="button" id="btnDashboard">Refresh dashboard</button>
+    </div>
+    <div class="summary-bar" id="summaryBar">Loading…</div>
+    <div id="projectCards"></div>
+  </section>
 
   <section>
     <h2>Health</h2>
@@ -58,7 +87,7 @@
 
   <section>
     <h2>Backlog for slug</h2>
-    <input id="backlogSlug" placeholder="project-slug" />
+    <input id="backlogSlug" placeholder="project-slug" value="demo-dashboard" />
     <div class="row">
       <button type="button" id="btnBacklog">GET backlog</button>
       <button type="button" id="btnBacklogGen">Generate backlog (AI)</button>
@@ -88,6 +117,99 @@
       el.className = ok ? "ok" : "err";
     }
 
+    function statusChip(label, count, cls) {
+      if (!count) return "";
+      return `<span class="chip ${cls || ""}">${label}: ${count}</span>`;
+    }
+
+    function renderDashboard(data) {
+      const s = data.summary;
+      document.getElementById("summaryBar").innerHTML = `
+        <span><strong>${s.projects}</strong> projects</span>
+        <span><strong>${s.done}</strong> / ${s.tasks} tasks done</span>
+        <span><strong>${s.percent}%</strong> overall</span>
+      `;
+
+      const container = document.getElementById("projectCards");
+      if (!data.projects.length) {
+        container.innerHTML = `<p class="muted">No projects yet. Run <code>aityuahn serve --demo</code> or forge a project.</p>`;
+        return;
+      }
+
+      container.innerHTML = data.projects.map(p => {
+        const prog = p.progress;
+        const chips = [
+          statusChip("done", prog.done, "done"),
+          statusChip("in progress", prog.in_progress, "in_progress"),
+          statusChip("backlog", prog.backlog),
+          statusChip("blocked", prog.blocked, "blocked"),
+        ].filter(Boolean).join("");
+
+        const rows = p.tasks.map(t => `
+          <tr>
+            <td><code>${t.id}</code></td>
+            <td>${t.title}</td>
+            <td>${t.status}</td>
+            <td>${t.priority}</td>
+            <td>
+              <div class="task-actions">
+                ${t.status !== "in_progress" ? `<button type="button" data-slug="${p.slug}" data-id="${t.id}" data-status="in_progress">Start</button>` : ""}
+                ${t.status !== "done" ? `<button type="button" data-slug="${p.slug}" data-id="${t.id}" data-status="done">Done</button>` : ""}
+              </div>
+            </td>
+          </tr>
+        `).join("");
+
+        const lastTest = p.last_test
+          ? `<p class="muted">Last test: ${p.last_test.status} (exit ${p.last_test.exit_code ?? "—"})</p>`
+          : "";
+
+        return `
+          <article class="project-card">
+            <h3>${p.title}</h3>
+            <div class="slug">${p.slug}${p.registered ? " · registered" : ""}</div>
+            <p class="muted">${p.summary || ""}</p>
+            <div class="progress-wrap"><div class="progress-fill" style="width:${prog.percent}%"></div></div>
+            <div class="row"><span>${prog.percent}% complete (${prog.done}/${prog.total})</span></div>
+            <div class="status-chips">${chips}</div>
+            ${lastTest}
+            <table class="task-table">
+              <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Pri</th><th></th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </article>
+        `;
+      }).join("");
+
+      container.querySelectorAll("[data-id]").forEach(btn => {
+        btn.onclick = async () => {
+          try {
+            await api("/api/task/status", {
+              method: "PATCH",
+              body: JSON.stringify({
+                slug: btn.dataset.slug,
+                task_id: btn.dataset.id,
+                status: btn.dataset.status,
+              }),
+            });
+            await loadDashboard();
+          } catch (e) { alert(String(e)); }
+        };
+      });
+    }
+
+    async function loadDashboard() {
+      try {
+        const d = await api("/api/dashboard");
+        document.getElementById("paths").textContent = d.forge_data;
+        renderDashboard(d);
+      } catch (e) {
+        document.getElementById("projectCards").innerHTML = `<p class="err">${e}</p>`;
+      }
+    }
+
+    document.getElementById("btnDashboard").onclick = loadDashboard;
+
     document.getElementById("btnHealth").onclick = async () => {
       try {
         const d = await api("/api/health");
@@ -110,6 +232,7 @@
           method: "POST",
           body: JSON.stringify({ prompt, slug }),
         }));
+        await loadDashboard();
       } catch (e) { show("outIdea", String(e), false); }
     };
 
@@ -126,6 +249,7 @@
             generate_backlog: document.getElementById("forgeBacklog").checked,
           }),
         }));
+        await loadDashboard();
       } catch (e) { show("outForge", String(e), false); }
     };
 
@@ -145,9 +269,11 @@
           method: "POST",
           body: JSON.stringify({ slug }),
         }));
+        await loadDashboard();
       } catch (e) { show("outBacklog", String(e), false); }
     };
 
+    loadDashboard();
     document.getElementById("btnHealth").click();
   </script>
 </body>

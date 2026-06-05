@@ -4,10 +4,11 @@ from fastapi.testclient import TestClient
 
 from python.backend.app import create_app
 from python.config import load_forge_config
+from python.demo import seed_demo_data
 from python.forge import LForge
 
 
-def test_health_and_ui(tmp_path: Path):
+def _test_forge(tmp_path: Path) -> LForge:
     cfg_path = Path(__file__).resolve().parent.parent / "config" / "forge.example.yaml"
     cfg = load_forge_config(cfg_path)
     cfg.forge_data_dir = tmp_path / ".python"
@@ -27,7 +28,11 @@ def test_health_and_ui(tmp_path: Path):
     forge.backlog = BacklogService(cfg, forge.storage)
     forge.projects = ProjectService(cfg, forge.storage)
     forge.testing = TestService(cfg, forge.storage)
+    return forge
 
+
+def test_health_and_ui(tmp_path: Path):
+    forge = _test_forge(tmp_path)
     client = TestClient(create_app(forge))
     r = client.get("/api/health")
     assert r.status_code == 200
@@ -36,3 +41,41 @@ def test_health_and_ui(tmp_path: Path):
     r = client.get("/")
     assert r.status_code == 200
     assert "aityuahn" in r.text.lower()
+    assert "dashboard" in r.text.lower()
+
+
+def test_dashboard_and_task_status(tmp_path: Path):
+    forge = _test_forge(tmp_path)
+    seed_demo_data(forge.storage)
+    client = TestClient(create_app(forge))
+
+    r = client.get("/api/dashboard")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["summary"]["projects"] == 1
+    assert data["summary"]["tasks"] == 4
+    assert data["projects"][0]["slug"] == "demo-dashboard"
+
+    r = client.patch(
+        "/api/task/status",
+        json={"slug": "demo-dashboard", "task_id": "T-demo0003", "status": "in_progress"},
+    )
+    assert r.status_code == 200
+    assert r.json()["status"] == "in_progress"
+
+    r = client.get("/api/dashboard")
+    assert r.json()["projects"][0]["progress"]["in_progress"] == 2
+
+
+def test_run_project_tests(tmp_path: Path):
+    forge = _test_forge(tmp_path)
+    seed_demo_data(forge.storage)
+    project_dir = tmp_path / "workspace" / "demo-dashboard"
+    project_dir.mkdir(parents=True)
+    client = TestClient(create_app(forge))
+
+    r = client.post("/api/test/demo-dashboard", json={"command": "echo demo-test-ok"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["run"]["status"] == "passed"
+    assert body["run"]["exit_code"] == 0
