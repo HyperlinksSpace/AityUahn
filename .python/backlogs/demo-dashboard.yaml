@@ -1,0 +1,57 @@
+project_slug: demo-dashboard
+tasks:
+- id: T-demo0001
+  title: Initialize repository
+  description: Create README, folders, and project metadata.
+  status: done
+  priority: 90
+  labels: []
+  depends_on: []
+  assignee: null
+  test_command: echo ok
+  created_at: '2026-06-05T20:34:15.710591Z'
+  updated_at: '2026-06-05T20:34:15.710591Z'
+  completed_at: null
+  notes: []
+- id: T-demo0002
+  title: Add dashboard API
+  description: Aggregate ideas, backlogs, and test runs for the UI.
+  status: in_progress
+  priority: 85
+  labels: []
+  depends_on: []
+  assignee: null
+  test_command: null
+  created_at: '2026-06-05T20:34:15.710591Z'
+  updated_at: '2026-06-05T20:34:15.710591Z'
+  completed_at: null
+  notes: []
+- id: T-demo0003
+  title: Wire task status controls
+  description: Allow start/done transitions from the browser.
+  status: backlog
+  priority: 80
+  labels: []
+  depends_on:
+  - T-demo0002
+  assignee: null
+  test_command: null
+  created_at: '2026-06-05T20:34:15.710591Z'
+  updated_at: '2026-06-05T20:34:15.710591Z'
+  completed_at: null
+  notes: []
+- id: T-demo0004
+  title: Document roadmap progress
+  description: Update README and ship the dashboard milestone.
+  status: backlog
+  priority: 70
+  labels: []
+  depends_on: []
+  assignee: null
+  test_command: null
+  created_at: '2026-06-05T20:34:15.710591Z'
+  updated_at: '2026-06-05T20:34:15.710591Z'
+  completed_at: null
+  notes: []
+test_runs: []
+updated_at: '2026-06-05T20:34:15.710591Z'

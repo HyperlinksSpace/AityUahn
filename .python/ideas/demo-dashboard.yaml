@@ -1,0 +1,16 @@
+slug: demo-dashboard
+title: Demo Dashboard Project
+summary: Sample forged project to explore the AityUahn dashboard and backlog UI.
+vision: Show progress bars, task statuses, and test history without calling AI providers.
+constraints:
+- Local-only demo data
+- Safe to delete from .python/backlogs/
+success_criteria:
+- Dashboard loads with mixed task statuses
+- Task actions update progress
+tags:
+- demo
+- dashboard
+created_at: '2026-06-05T20:34:15.707077Z'
+updated_at: '2026-06-05T20:34:15.707077Z'
+source_provider: null
