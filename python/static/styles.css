@@ -76,6 +76,8 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
 .status-pill.live { background: #14532d; color: #bbf7d0; }
 .status-pill.static { background: #1e3a5f; color: #bfdbfe; }
 .status-pill.offline { background: #451a1a; color: #fecaca; }
+.header-right { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.user-badge { font-size: 0.78rem; color: var(--muted); background: var(--panel-2); padding: 0.25rem 0.5rem; border-radius: 6px; }
 
 .connect-bar {
   display: flex;

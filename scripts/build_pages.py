@@ -33,12 +33,14 @@ def build_pages() -> None:
     config["pagesBase"] = PAGES_BASE
     (DOCS / "config.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
-    for name in ("index.html", "docs.html"):
-        dst = DOCS / name
+    for name in ("landing.html", "controller.html", "docs.html"):
+        dst = DOCS / ("index.html" if name == "landing.html" else name)
         dst.write_text(_patch_html((STATIC / name).read_text(encoding="utf-8")), encoding="utf-8")
 
-    for name in ("app.js", "styles.css"):
-        shutil.copy2(STATIC / name, DOCS / name)
+    for name in ("app.js", "auth.js", "landing.js", "styles.css", "landing.css"):
+        src = STATIC / name
+        if src.is_file():
+            shutil.copy2(src, DOCS / name)
 
     (DOCS / "demo-data.json").write_text(
         json.dumps(demo_dashboard_payload(), indent=2),

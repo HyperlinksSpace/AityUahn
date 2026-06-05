@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from python.forge import LForge
 from python.models import TaskStatus
+from python.saas.router import create_saas_router
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -65,6 +66,7 @@ def create_app(forge: LForge | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.include_router(create_saas_router(engine))
 
     @app.get("/api/health")
     def health() -> dict[str, Any]:
@@ -174,9 +176,17 @@ def create_app(forge: LForge | None = None) -> FastAPI:
 
         return demo_dashboard_payload()
 
+    @app.get("/controller.html")
+    def controller_html() -> FileResponse:
+        return FileResponse(STATIC_DIR / "controller.html")
+
+    @app.get("/landing.html")
+    def landing_html() -> FileResponse:
+        return FileResponse(STATIC_DIR / "landing.html")
+
     @app.get("/index.html")
     def index_html() -> FileResponse:
-        return FileResponse(STATIC_DIR / "index.html")
+        return FileResponse(STATIC_DIR / "landing.html")
 
     @app.get("/docs.html")
     def docs_html() -> FileResponse:
@@ -184,7 +194,10 @@ def create_app(forge: LForge | None = None) -> FastAPI:
 
     @app.get("/")
     def ui() -> FileResponse:
-        index = STATIC_DIR / "index.html"
+        landing = STATIC_DIR / "landing.html"
+        if landing.is_file():
+            return FileResponse(landing)
+        index = STATIC_DIR / "controller.html"
         if not index.is_file():
             raise HTTPException(404, "UI not found")
         return FileResponse(index)

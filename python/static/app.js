@@ -21,6 +21,41 @@
   let selectedSlug = null;
   let currentView = "kanban";
   let providers = [];
+  let teamProjects = [];
+  let activeTeamProject = null;
+
+  function authHeaders() {
+    const h = {};
+    if (window.AityAuth?.getToken()) h.Authorization = `Bearer ${AityAuth.getToken()}`;
+    return h;
+  }
+
+  function currentUser() {
+    return window.AityAuth?.getUser() || null;
+  }
+
+  function updateAuthUI() {
+    const user = currentUser();
+    const badge = document.getElementById("userBadge");
+    const signOut = document.getElementById("btnSignOut");
+    const newProj = document.getElementById("btnNewProject");
+    const teamList = document.getElementById("teamProjectList");
+    const upgrade = document.getElementById("btnUpgradeTeam");
+    if (!badge) return;
+    if (user) {
+      badge.textContent = `${user.name} · ${user.plan}`;
+      badge.classList.remove("hidden");
+      signOut?.classList.remove("hidden");
+      newProj?.classList.remove("hidden");
+      teamList?.classList.remove("hidden");
+      upgrade?.classList.toggle("hidden", user.plan === "team");
+    } else {
+      badge.classList.add("hidden");
+      signOut?.classList.add("hidden");
+      newProj?.classList.add("hidden");
+      teamList?.classList.add("hidden");
+    }
+  }
 
   function toast(msg, isError = false) {
     const el = document.getElementById("toast");
@@ -142,7 +177,7 @@
     apiBase = readApiBase(config);
     document.getElementById("apiBaseInput").value = apiBase;
 
-    if (preferDemo) {
+    if (preferDemo || new URLSearchParams(location.search).get("demo") === "1") {
       await connectDemo();
       return;
     }
@@ -174,7 +209,7 @@
   async function api(path, opts = {}) {
     requireLive();
     const r = await fetch(`${apiBase}${path}`, {
-      headers: { "Content-Type": "application/json", ...opts.headers },
+      headers: { "Content-Type": "application/json", ...authHeaders(), ...opts.headers },
       ...opts,
     });
     const text = await r.text();
@@ -373,11 +408,68 @@
       b.classList.toggle("active", b.dataset.view === view);
     });
     document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
-    document.getElementById(`view${view.charAt(0).toUpperCase()}${view.slice(1)}`).classList.remove("hidden");
+    const id = view === "team" ? "viewTeam" : `view${view.charAt(0).toUpperCase()}${view.slice(1)}`;
+    document.getElementById(id)?.classList.remove("hidden");
+    if (view === "team") renderTeamView();
+  }
+
+  async function loadTeamProjects() {
+    if (!currentUser() || mode !== "live") {
+      teamProjects = [];
+      return;
+    }
+    try {
+      teamProjects = await AityAuth.saasApi("/projects");
+      renderSaasProjectList();
+    } catch {
+      teamProjects = [];
+    }
+  }
+
+  function renderSaasProjectList() {
+    const list = document.getElementById("saasProjectList");
+    if (!list) return;
+    list.innerHTML = teamProjects
+      .map(
+        (p) => `
+      <li><button type="button" class="${activeTeamProject?.id === p.id ? "active" : ""}" data-team-id="${p.id}" data-forge-slug="${p.forge_slug}">
+        ${p.name}<span class="slug">${p.slug} · ${p.role}</span>
+      </button></li>`
+      )
+      .join("");
+    list.querySelectorAll("[data-team-id]").forEach((btn) => {
+      btn.onclick = () => {
+        activeTeamProject = teamProjects.find((p) => p.id === btn.dataset.teamId) || null;
+        selectedSlug = btn.dataset.forgeSlug;
+        renderSaasProjectList();
+        refresh();
+        renderTeamView();
+      };
+    });
+  }
+
+  async function renderTeamView() {
+    const memberList = document.getElementById("memberList");
+    if (!memberList) return;
+    if (!activeTeamProject) {
+      memberList.textContent = "Select a team project from the sidebar.";
+      return;
+    }
+    memberList.textContent = JSON.stringify(activeTeamProject.members || [], null, 2);
+    if (mode === "live" && AityAuth.getToken()) {
+      try {
+        const cfg = await AityAuth.saasApi(`/projects/${activeTeamProject.id}/api-config`);
+        document.getElementById("teamDefaultProvider").value = cfg.default_provider || "claude";
+        showOutput("outTeamApi", cfg);
+      } catch (e) {
+        showOutput("outTeamApi", String(e));
+      }
+    }
   }
 
   async function refresh() {
     await fetchDashboard();
+    await loadTeamProjects();
     renderSummary();
     renderProjectList();
     renderKanban();
@@ -457,7 +549,7 @@
       }
     };
 
-    document.getElementById("btnIdea").onclick = async () => {
+    document.getElementById("btnIdea")?.addEventListener("click", async () => {
       const prompt = document.getElementById("ideaPrompt").value.trim();
       if (!prompt) return toast("Enter an idea prompt", true);
       try {
@@ -540,7 +632,86 @@
       }
     };
 
-    await resolveBackend();
+    document.getElementById("btnSignOut")?.addEventListener("click", () => {
+      AityAuth.clearSession();
+      location.href = "landing.html";
+    });
+
+    document.getElementById("btnNewProject")?.addEventListener("click", () => {
+      document.getElementById("newProjectDialog")?.showModal();
+    });
+    document.getElementById("btnCancelProject")?.addEventListener("click", () => {
+      document.getElementById("newProjectDialog")?.close();
+    });
+    document.getElementById("newProjectForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        requireLive();
+        const proj = await AityAuth.saasApi("/projects", {
+          method: "POST",
+          body: JSON.stringify({
+            name: document.getElementById("newProjName").value.trim(),
+            slug: document.getElementById("newProjSlug").value.trim(),
+            create_demo: document.getElementById("newProjDemo").checked,
+          }),
+        });
+        document.getElementById("newProjectDialog")?.close();
+        activeTeamProject = proj;
+        selectedSlug = proj.forge_slug;
+        await refresh();
+        toast("Project created");
+      } catch (ex) {
+        toast(String(ex.message || ex), true);
+      }
+    });
+
+    document.getElementById("btnInvite")?.addEventListener("click", async () => {
+      if (!activeTeamProject) return toast("Select a team project", true);
+      const email = document.getElementById("inviteEmail").value.trim();
+      if (!email) return toast("Enter email", true);
+      try {
+        const res = await AityAuth.saasApi(`/projects/${activeTeamProject.id}/members`, {
+          method: "POST",
+          body: JSON.stringify({ email, role: "member" }),
+        });
+        activeTeamProject.members = res.roster;
+        renderTeamView();
+        toast("Member invited");
+      } catch (ex) {
+        toast(String(ex.message || ex), true);
+      }
+    });
+
+    document.getElementById("btnSaveApi")?.addEventListener("click", async () => {
+      if (!activeTeamProject) return toast("Select a team project", true);
+      try {
+        let providersJson = JSON.parse(document.getElementById("teamApiJson").value || "[]");
+        await AityAuth.saasApi(`/projects/${activeTeamProject.id}/api-config`, {
+          method: "PUT",
+          body: JSON.stringify({
+            default_provider: document.getElementById("teamDefaultProvider").value.trim(),
+            providers: providersJson,
+          }),
+        });
+        toast("Shared API saved for team");
+      } catch (ex) {
+        toast(String(ex.message || ex), true);
+      }
+    });
+
+    document.getElementById("btnUpgradeTeam")?.addEventListener("click", async () => {
+      try {
+        const res = await AityAuth.saasApi("/billing/upgrade-team", { method: "POST", body: "{}" });
+        AityAuth.setSession(AityAuth.getToken(), { ...currentUser(), plan: res.plan });
+        updateAuthUI();
+        toast(res.message || "Upgraded");
+      } catch (ex) {
+        toast(String(ex.message || ex), true);
+      }
+    });
+
+    updateAuthUI();
+    await resolveBackend(new URLSearchParams(location.search).get("demo") === "1");
     await loadProviders();
     await refresh();
     setView("kanban");

@@ -78,15 +78,29 @@ aityuahn test my-project
 aityuahn providers
 ```
 
-### 5. Test UI (HTTP backend)
+### 5. Web app (landing + controller)
 
-Runs a small **FastAPI** server over your `.python` data:
+**Landing** (marketing, sign-in, pricing): open `/` when running `aityuahn serve`, or GitHub Pages.
+
+**Controller** (kanban, forge, agents): `/controller.html`
 
 ```bash
 aityuahn serve
-# open http://127.0.0.1:8765/
-# first run auto-seeds demo data when no backlogs exist; use --demo to force re-seed check
+# Landing:  http://127.0.0.1:8765/
+# App:      http://127.0.0.1:8765/controller.html
+# Demo:     http://127.0.0.1:8765/controller.html?demo=1
 ```
+
+#### B2B plans
+
+| Plan | Price | Includes |
+| --- | --- | --- |
+| **Personal** | Free | 1 user, 1 project, bring your own API keys |
+| **Team** | $49/seat/mo (demo billing) | Shared project, members, owner-managed API pool |
+
+Sign up on the landing page → create a **team project** → invite members by email (they must register first) → set **shared API** under **Team & API** so all members use the same provider keys and codebase slug.
+
+SaaS API: `/api/saas/auth/register`, `/api/saas/projects`, `/api/saas/projects/{id}/members`, …
 
 - **Dashboard:** `/` — project cards, progress bars, task start/done controls
 - **UI:** forge / idea / backlog panels for API testing

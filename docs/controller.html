@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/AityUahn/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AityUahn — Forge Controller</title>
+  <link rel="stylesheet" href="/AityUahn/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>AityUahn Forge Controller</h1>
+      <nav class="header-nav">
+        <a href="/AityUahn/landing.html">Home</a>
+        <a href="/AityUahn/controller.html" class="active">Controller</a>
+        <a href="/AityUahn/docs.html">Docs</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <span id="userBadge" class="user-badge hidden"></span>
+      <span id="statusPill" class="status-pill">Connecting…</span>
+      <button type="button" id="btnSignOut" class="hidden">Sign out</button>
+    </div>
+  </header>
+
+  <div class="connect-bar">
+    <div style="flex:1;min-width:200px">
+      <label for="apiBaseInput">API backend</label>
+      <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
+    </div>
+    <button type="button" id="btnConnect" class="primary">Connect</button>
+    <button type="button" id="btnDemoMode">Offline demo</button>
+    <a href="/AityUahn/landing.html" class="muted" style="align-self:center;font-size:0.85rem">Sign in for team projects</a>
+  </div>
+
+  <div id="blockedOverlay" class="blocked-overlay hidden">
+    <div class="blocked-card">
+      <h2 style="margin-top:0">Connect your AityUahn API</h2>
+      <p class="muted">Run <code>aityuahn serve</code> or use the hosted API. Team features require sign-in.</p>
+      <div class="row" style="margin-top:1rem">
+        <button type="button" id="btnOverlayConnect" class="primary">Connect</button>
+        <button type="button" id="btnOverlayDemo">Try offline demo</button>
+        <a href="/AityUahn/landing.html" class="lp-btn ghost" style="text-decoration:none;padding:0.45rem 0.75rem">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <h2>Forge projects</h2>
+      <ul id="projectList" class="project-list"></ul>
+      <div id="teamProjectList" class="hidden">
+        <h2 style="margin-top:1rem">Your teams</h2>
+        <ul id="saasProjectList" class="project-list"></ul>
+      </div>
+      <button type="button" id="btnNewProject" class="primary hidden" style="width:100%;margin-top:0.5rem">+ New project</button>
+      <p class="muted" id="sidebarHint">Connect API to list projects</p>
+    </aside>
+
+    <main class="main">
+      <div class="view-tabs">
+        <button type="button" data-view="kanban" class="active">Kanban</button>
+        <button type="button" data-view="tasks">Task list</button>
+        <button type="button" data-view="forge">Forge &amp; backlog</button>
+        <button type="button" data-view="agents">Agents</button>
+        <button type="button" data-view="team">Team &amp; API</button>
+      </div>
+
+      <div class="summary-row" id="summaryRow"></div>
+
+      <section id="viewKanban" class="view">
+        <div id="kanbanBoard" class="kanban"></div>
+      </section>
+
+      <section id="viewTasks" class="view hidden">
+        <div class="panel">
+          <h3>Add task</h3>
+          <label>Title</label>
+          <input id="taskTitle" placeholder="Implement auth middleware" />
+          <label>Description</label>
+          <textarea id="taskDesc" rows="2"></textarea>
+          <button type="button" id="btnAddTask" class="primary" style="margin-top:0.75rem">Add task</button>
+        </div>
+        <div id="taskTableWrap"></div>
+      </section>
+
+      <section id="viewForge" class="view hidden">
+        <div class="panel">
+          <h3>Full forge (idea → backlog → scaffold)</h3>
+          <textarea id="forgePrompt" rows="3" placeholder="Describe the project to forge…"></textarea>
+          <label>Slug (optional)</label>
+          <input id="forgeSlug" placeholder="my-project" />
+          <div class="row" style="margin-top:0.5rem">
+            <label><input type="checkbox" id="forgeScaffold" checked /> Scaffold</label>
+            <label><input type="checkbox" id="forgeBacklog" checked /> AI backlog</label>
+          </div>
+          <button type="button" id="btnForge" class="primary" style="margin-top:0.75rem">Run forge</button>
+          <div id="outForge" class="output-box hidden"></div>
+        </div>
+        <div class="panel">
+          <h3>Backlog</h3>
+          <div class="row">
+            <button type="button" id="btnBacklogRefresh">Refresh</button>
+            <button type="button" id="btnBacklogGen" class="primary">Generate (AI)</button>
+            <button type="button" id="btnRunTests">Run tests</button>
+          </div>
+          <div id="outBacklog" class="output-box hidden"></div>
+        </div>
+      </section>
+
+      <section id="viewAgents" class="view hidden">
+        <div class="panel">
+          <h3>Agent prompt</h3>
+          <select id="agentProvider"></select>
+          <label>System</label>
+          <input id="agentSystem" placeholder="Optional system prompt" />
+          <label>Prompt</label>
+          <textarea id="agentPrompt" rows="4"></textarea>
+          <button type="button" id="btnAgentSend" class="primary" style="margin-top:0.75rem">Send</button>
+          <div id="outAgent" class="output-box hidden"></div>
+        </div>
+      </section>
+
+      <section id="viewTeam" class="view hidden">
+        <div class="panel">
+          <h3>Team members</h3>
+          <p class="muted">Team plan lets the project owner share one codebase and API pool with members.</p>
+          <div id="memberList" class="output-box" style="max-height:140px">Sign in and select a team project.</div>
+          <label>Invite by email</label>
+          <div class="row">
+            <input id="inviteEmail" placeholder="teammate@company.com" />
+            <button type="button" id="btnInvite" class="primary">Invite</button>
+          </div>
+          <button type="button" id="btnUpgradeTeam" class="hidden" style="margin-top:0.75rem">Upgrade to Team plan</button>
+        </div>
+        <div class="panel">
+          <h3>Shared API (team owner)</h3>
+          <p class="muted">Provider keys set here are used by all members for agent &amp; forge calls on this project.</p>
+          <label>Default provider</label>
+          <input id="teamDefaultProvider" value="claude" />
+          <label>Provider config (JSON array)</label>
+          <textarea id="teamApiJson" rows="6" placeholder='[{"id":"claude","kind":"claude","enabled":true,"api_key_env":"ANTHROPIC_API_KEY"}]'></textarea>
+          <button type="button" id="btnSaveApi" class="primary" style="margin-top:0.75rem">Save shared API</button>
+          <div id="outTeamApi" class="output-box hidden"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="newProjectDialog" class="blocked-card" style="border:1px solid var(--border);max-width:420px">
+    <form method="dialog" id="newProjectForm">
+      <h3 style="margin-top:0">Create team project</h3>
+      <label>Name<input id="newProjName" required /></label>
+      <label>Slug<input id="newProjSlug" required pattern="[a-z0-9-]+" /></label>
+      <label><input type="checkbox" id="newProjDemo" /> Seed demo backlog</label>
+      <div class="row" style="margin-top:0.75rem">
+        <button type="button" id="btnCancelProject">Cancel</button>
+        <button type="submit" class="primary">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script src="/AityUahn/auth.js"></script>
+  <script src="/AityUahn/app.js"></script>
+</body>
+</html>

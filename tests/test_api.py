@@ -40,7 +40,10 @@ def test_health_and_ui(tmp_path: Path):
 
     r = client.get("/")
     assert r.status_code == 200
-    assert "aityuahn" in r.text.lower()
+    assert "agentic" in r.text.lower() or "forge" in r.text.lower()
+
+    r = client.get("/controller.html")
+    assert r.status_code == 200
     assert "kanban" in r.text.lower()
 
     r = client.get("/demo-data.json")
