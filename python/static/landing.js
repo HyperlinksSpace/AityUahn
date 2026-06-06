@@ -4,7 +4,17 @@
   const title = document.getElementById("authTitle");
   const planWrap = document.getElementById("authPlanWrap");
   const errEl = document.getElementById("authError");
+  const apiInput = document.getElementById("authApiBase");
   let mode = "login";
+
+  async function initApiField() {
+    await AityAuth.loadConfig();
+    const base = AityAuth.readApiBase();
+    if (base) apiInput.value = base;
+    if (location.hostname.endsWith("github.io")) {
+      document.getElementById("apiBanner")?.classList.remove("hidden");
+    }
+  }
 
   function openAuth(nextMode = "login") {
     mode = nextMode;
@@ -12,19 +22,24 @@
     document.getElementById("authToggle").textContent = mode === "login" ? "Create account" : "Sign in instead";
     planWrap.classList.toggle("hidden", mode === "login");
     errEl.classList.add("hidden");
+    if (!apiInput.value && AityAuth.isLocalHost()) {
+      apiInput.value = location.origin;
+    }
     dialog.showModal();
   }
 
   async function loadPricing() {
     const wrap = document.getElementById("pricingCards");
     try {
+      await AityAuth.loadConfig();
       const base = AityAuth.readApiBase();
+      if (!base) throw new Error("offline");
       const r = await fetch(`${base}/api/saas/pricing`);
       const plans = r.ok ? await r.json() : null;
       if (!plans) throw new Error("offline");
       wrap.innerHTML = plans
         .map(
-          (p, i) => `
+          (p) => `
         <article class="lp-plan ${p.id === "team" ? "featured" : ""}">
           <h3>${p.name}</h3>
           <div class="lp-price">${p.price_label}</div>
@@ -36,15 +51,22 @@
         )
         .join("");
       wrap.querySelectorAll("[data-plan]").forEach((btn) => {
-        btn.onclick = () => openAuth("register");
-        if (btn.dataset.plan === "team") {
-          document.getElementById("authPlan").value = "team";
-        }
+        btn.onclick = () => {
+          if (btn.dataset.plan === "team") {
+            document.getElementById("authPlan").value = "team";
+          }
+          openAuth("register");
+        };
       });
     } catch {
       wrap.innerHTML = `
-        <article class="lp-plan"><h3>Personal</h3><div class="lp-price">Free</div><ul><li>1 project</li></ul><button type="button" class="lp-btn" onclick="document.getElementById('btnHeroSignUp').click()">Start free</button></article>
-        <article class="lp-plan featured"><h3>Team</h3><div class="lp-price">$49/seat/mo</div><ul><li>Shared API & members</li></ul><button type="button" class="lp-btn primary" onclick="document.getElementById('btnHeroSignUp').click()">Get Team access</button></article>`;
+        <article class="lp-plan"><h3>Personal</h3><div class="lp-price">Free</div><ul><li>1 project</li><li>Bring your own API keys</li></ul><button type="button" class="lp-btn" id="planPersonal">Start free</button></article>
+        <article class="lp-plan featured"><h3>Team</h3><div class="lp-price">$49/seat/mo</div><ul><li>Shared codebase &amp; API</li><li>Invite members</li></ul><button type="button" class="lp-btn primary" id="planTeam">Get Team access</button></article>`;
+      document.getElementById("planPersonal").onclick = () => openAuth("register");
+      document.getElementById("planTeam").onclick = () => {
+        document.getElementById("authPlan").value = "team";
+        openAuth("register");
+      };
     }
   }
 
@@ -55,6 +77,19 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errEl.classList.add("hidden");
+    const apiBase = AityAuth.setApiBase(apiInput.value);
+    if (!apiBase) {
+      errEl.textContent = "Enter your aityuahn serve URL (e.g. http://127.0.0.1:8765)";
+      errEl.classList.remove("hidden");
+      return;
+    }
+    try {
+      await AityAuth.probeApi(apiBase);
+    } catch (ex) {
+      errEl.textContent = String(ex.message || ex);
+      errEl.classList.remove("hidden");
+      return;
+    }
     const email = document.getElementById("authEmail").value.trim();
     const password = document.getElementById("authPassword").value;
     const name = document.getElementById("authName").value.trim();
@@ -82,5 +117,6 @@
     };
   }
 
+  initApiField();
   loadPricing();
 })();

@@ -81,6 +81,9 @@
   }
 
   function readApiBase(config) {
+    if (window.AityAuth) {
+      return AityAuth.readApiBase();
+    }
     const params = new URLSearchParams(location.search);
     const fromQuery = params.get("api");
     if (fromQuery) {
@@ -90,7 +93,7 @@
     }
     const stored = localStorage.getItem(STORAGE_API);
     if (stored) return stored.replace(/\/$/, "");
-    if (config.defaultApi) return config.defaultApi.replace(/\/$/, "");
+    if (config?.defaultApi) return String(config.defaultApi).replace(/\/$/, "");
     if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
       return location.origin.replace(/\/$/, "");
     }
@@ -173,6 +176,7 @@
   }
 
   async function resolveBackend(preferDemo = false) {
+    if (window.AityAuth) await AityAuth.loadConfig();
     const config = await loadConfig();
     apiBase = readApiBase(config);
     document.getElementById("apiBaseInput").value = apiBase;

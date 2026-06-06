@@ -22,6 +22,7 @@
     <p class="lp-eyebrow">B2B agentic development platform</p>
     <h1>Forge projects with AI.<br />Ship as one team.</h1>
     <p class="lp-lead">Shared codebase, kanban backlog, and a single API pool managed by your team lead. Personal use is free; teams get full collaboration.</p>
+    <p id="apiBanner" class="lp-banner hidden">Sign-in and registration use your <strong>aityuahn serve</strong> backend — not GitHub Pages. Run locally, then paste <code>http://127.0.0.1:8765</code> when signing in.</p>
     <div class="lp-cta">
       <a href="/AityUahn/controller.html?demo=1" class="lp-btn primary lg">Try demo</a>
       <button type="button" id="btnHeroSignUp" class="lp-btn lg">Start free</button>
@@ -46,6 +47,9 @@
   <dialog id="authDialog" class="lp-dialog">
     <form method="dialog" id="authForm">
       <h2 id="authTitle">Sign in</h2>
+      <label>API backend <span class="lp-hint">(aityuahn serve URL)</span>
+        <input id="authApiBase" placeholder="http://127.0.0.1:8765" required />
+      </label>
       <label>Name<input id="authName" placeholder="Your name" /></label>
       <label>Email<input id="authEmail" type="email" required placeholder="you@company.com" /></label>
       <label>Password<input id="authPassword" type="password" required minlength="6" /></label>
