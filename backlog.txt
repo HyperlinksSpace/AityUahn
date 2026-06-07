@@ -1,7 +1,5 @@
 B2B SaaS (v0.2)
 
-- Improve landing
-
 - All languages
 
 - Payment (TON)
