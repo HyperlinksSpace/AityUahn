@@ -1,7 +1,19 @@
-B2B SaaS (v0.2)
-- Landing page with Try demo + sign-in
-- Personal (free) vs Team ($49/seat demo billing)
-- Users register / sign in (JWT)
-- Team projects with shared forge slug + API config
-- Invite members to a project (Team plan)
-- Controller: Kanban, tasks, forge, agents, Team & API tab
+B2B SaaS (v0.2)
+
+- Improve landing
+
+- All languages
+
+- Payment (TON)
+
+- Landing page with Try demo + sign-in
+
+- Personal (free) vs Team ($49/seat demo billing)
+
+- Users register / sign in (JWT)
+
+- Team projects with shared forge slug + API config
+
+- Invite members to a project (Team plan)
+
+- Controller: Kanban, tasks, forge, agents, Team & API tab

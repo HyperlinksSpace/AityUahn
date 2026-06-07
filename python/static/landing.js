@@ -72,7 +72,21 @@
 
   document.getElementById("btnSignIn").onclick = () => openAuth("login");
   document.getElementById("btnHeroSignUp").onclick = () => openAuth("register");
+  document.getElementById("btnCtaSignUp")?.addEventListener("click", () => openAuth("register"));
   document.getElementById("authToggle").onclick = () => openAuth(mode === "login" ? "register" : "login");
+
+  const nav = document.getElementById("lpNav");
+  const navToggle = document.getElementById("navToggle");
+  navToggle?.addEventListener("click", () => {
+    const open = nav.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  nav?.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("open");
+      navToggle?.setAttribute("aria-expanded", "false");
+    });
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();

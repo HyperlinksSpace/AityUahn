@@ -4,44 +4,290 @@
   <base href="/AityUahn/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AityUahn is a B2B agentic forge: turn prompts into ideas, backlogs, and scaffolds — then ship together on a shared kanban with Claude, Cursor, or your own AI stack." />
+  <meta name="theme-color" content="#070b12" />
   <title>AityUahn — Agentic forge for teams</title>
   <link rel="stylesheet" href="/AityUahn/landing.css" />
 </head>
 <body>
   <header class="lp-header">
     <a class="lp-logo" href="/AityUahn/landing.html">AityUahn</a>
-    <nav class="lp-nav">
+    <button type="button" class="lp-nav-toggle" id="navToggle" aria-expanded="false" aria-controls="lpNav">Menu</button>
+    <nav class="lp-nav" id="lpNav">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#integrations">Integrations</a>
       <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
       <a href="/AityUahn/docs.html">Docs</a>
       <button type="button" id="btnSignIn" class="lp-btn ghost">Sign in</button>
       <a href="/AityUahn/controller.html?demo=1" class="lp-btn primary">Try demo</a>
     </nav>
   </header>
 
-  <section class="lp-hero">
-    <p class="lp-eyebrow">B2B agentic development platform</p>
-    <h1>Forge projects with AI.<br />Ship as one team.</h1>
-    <p class="lp-lead">Shared codebase, kanban backlog, and a single API pool managed by your team lead. Personal use is free; teams get full collaboration.</p>
-    <p id="apiBanner" class="lp-banner hidden">Sign-in and registration use your <strong>aityuahn serve</strong> backend — not GitHub Pages. Run locally, then paste <code>http://127.0.0.1:8765</code> when signing in.</p>
-    <div class="lp-cta">
-      <a href="/AityUahn/controller.html?demo=1" class="lp-btn primary lg">Try demo</a>
-      <button type="button" id="btnHeroSignUp" class="lp-btn lg">Start free</button>
-    </div>
-  </section>
+  <main>
+    <section class="lp-hero">
+      <p class="lp-eyebrow">B2B agentic development platform · v0.2</p>
+      <h1>Forge projects with AI.<br />Ship as one team.</h1>
+      <p class="lp-lead">Describe an idea in plain language. AityUahn generates structured briefs, AI backlogs, and project scaffolds — then keeps your team aligned on a shared kanban with one API pool and one codebase slug.</p>
+      <p id="apiBanner" class="lp-banner hidden">Sign-in and registration use your <strong>aityuahn serve</strong> backend — not GitHub Pages. Run locally, then paste <code>http://127.0.0.1:8765</code> when signing in.</p>
+      <div class="lp-cta">
+        <a href="/AityUahn/controller.html?demo=1" class="lp-btn primary lg">Try demo</a>
+        <button type="button" id="btnHeroSignUp" class="lp-btn lg">Start free</button>
+        <a href="/AityUahn/docs.html" class="lp-btn ghost lg">Read docs</a>
+      </div>
+      <ul class="lp-stats" aria-label="Platform highlights">
+        <li><strong>CLI + Web</strong><span>Local forge or cloud Docker</span></li>
+        <li><strong>4 AI backends</strong><span>Claude, Cursor, OpenAI-compat, HTTP</span></li>
+        <li><strong>Team-ready</strong><span>Shared slug, keys, and invites</span></li>
+      </ul>
+    </section>
 
-  <section class="lp-features">
-    <article><h3>Kanban &amp; backlog</h3><p>AI-generated tasks, status tracking, and test runs in one controller.</p></article>
-    <article><h3>Team workspace</h3><p>Invite members to a project — same slug, same forge data, same provider keys.</p></article>
-    <article><h3>Agent orchestration</h3><p>Route ideas, backlogs, and prompts to Claude, Cursor, or your own stack.</p></article>
-  </section>
+    <section id="how-it-works" class="lp-section lp-steps-section">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Workflow</p>
+        <h2>From prompt to shipped project</h2>
+        <p class="lp-section-lead">One pipeline for ideation, task breakdown, scaffolding, and day-to-day delivery — usable from the terminal or the web controller.</p>
+      </div>
+      <ol class="lp-steps">
+        <li>
+          <span class="lp-step-num">1</span>
+          <h3>Describe</h3>
+          <p>Write a short natural-language prompt — the same way you'd brief a teammate in chat.</p>
+        </li>
+        <li>
+          <span class="lp-step-num">2</span>
+          <h3>Forge</h3>
+          <p>Generate an idea brief, AI backlog, and folder scaffold under your workspace in one step.</p>
+        </li>
+        <li>
+          <span class="lp-step-num">3</span>
+          <h3>Track</h3>
+          <p>Move tasks on kanban, run tests, and route agent prompts to the right provider per role.</p>
+        </li>
+        <li>
+          <span class="lp-step-num">4</span>
+          <h3>Ship together</h3>
+          <p>Team leads invite members, share forge slug + API config, and keep everyone on the same backlog.</p>
+        </li>
+      </ol>
+    </section>
 
-  <section id="pricing" class="lp-pricing">
-    <h2>Simple pricing</h2>
-    <div class="lp-plans" id="pricingCards">Loading plans…</div>
-  </section>
+    <section id="features" class="lp-section">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Capabilities</p>
+        <h2>Everything you need to run agentic projects</h2>
+        <p class="lp-section-lead">Built for sibling repos under one workspace — ideate fast, scaffold consistently, and track progress without switching tools.</p>
+      </div>
+      <div class="lp-features">
+        <article>
+          <p class="lp-card-tag">Ideas</p>
+          <h3>Structured briefs</h3>
+          <p>Turn a prompt into title, vision, constraints, and success criteria — saved as YAML you can edit.</p>
+        </article>
+        <article>
+          <p class="lp-card-tag">Backlog</p>
+          <h3>AI-generated tasks</h3>
+          <p>Generate or refresh task lists with priority, dependencies, status, and progress percentage.</p>
+        </article>
+        <article>
+          <p class="lp-card-tag">Scaffold</p>
+          <h3>Project folders</h3>
+          <p>Create <code>workspace/&lt;slug&gt;/</code> with README, standard dirs, and <code>.python</code> metadata.</p>
+        </article>
+        <article>
+          <p class="lp-card-tag">Controller</p>
+          <h3>Kanban &amp; backlog</h3>
+          <p>Web UI for status tracking, task controls, forge pipeline, and test run history in one place.</p>
+        </article>
+        <article>
+          <p class="lp-card-tag">Testing</p>
+          <h3>Verify on the backlog</h3>
+          <p>Run <code>pytest</code>, <code>npm test</code>, or custom commands — results stay attached to tasks.</p>
+        </article>
+        <article>
+          <p class="lp-card-tag">Teams</p>
+          <h3>Shared workspace</h3>
+          <p>Invite members to a project — same slug, forge data, and owner-managed provider keys.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="lp-section lp-controller-section">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Web controller</p>
+        <h2>One dashboard for delivery</h2>
+        <p class="lp-section-lead">Open the controller locally with <code>aityuahn serve</code>, on GitHub Pages with your API URL, or try the offline demo — no account required.</p>
+      </div>
+      <div class="lp-controller-grid">
+        <div class="lp-controller-panel">
+          <h3>Views included</h3>
+          <ul class="lp-checklist">
+            <li><strong>Kanban</strong> — drag-friendly columns from idea to done</li>
+            <li><strong>Task list</strong> — filter, start, block, and complete work items</li>
+            <li><strong>Forge &amp; backlog</strong> — run idea/backlog generation from the UI</li>
+            <li><strong>Agents</strong> — send prompts to configured providers</li>
+            <li><strong>Team &amp; API</strong> — shared keys, members, and project settings</li>
+          </ul>
+          <a href="/AityUahn/controller.html?demo=1" class="lp-btn primary">Open demo controller</a>
+        </div>
+        <div class="lp-controller-panel lp-controller-code">
+          <p class="lp-card-tag">Quick start</p>
+          <pre><code>aityuahn serve
+# Landing:  http://127.0.0.1:8765/
+# App:      http://127.0.0.1:8765/controller.html
+# Demo:     http://127.0.0.1:8765/controller.html?demo=1</code></pre>
+          <p class="lp-muted-note">GitHub Pages hosts the same UI. Connect your live API (local or deployed) for forge and agent actions.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="integrations" class="lp-section lp-integrations">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Pluggable AI</p>
+        <h2>Route work to the right provider</h2>
+        <p class="lp-section-lead">Configure multiple backends in <code>forge.yaml</code> and assign different providers for ideas, backlogs, and tasks.</p>
+      </div>
+      <div class="lp-provider-grid">
+        <article>
+          <h3>Claude</h3>
+          <p>Anthropic Messages API — ideal for structured idea and backlog JSON.</p>
+        </article>
+        <article>
+          <h3>Cursor</h3>
+          <p>HTTP gateway or Cursor SDK for coding tasks and agent automation.</p>
+        </article>
+        <article>
+          <h3>OpenAI-compatible</h3>
+          <p>OpenAI, Ollama, vLLM, LiteLLM — any <code>/v1/chat/completions</code> endpoint.</p>
+        </article>
+        <article>
+          <h3>Custom HTTP</h3>
+          <p>Wire TinyModel, internal REST APIs, or Gradio wrappers with body templates.</p>
+        </article>
+      </div>
+      <p class="lp-section-foot">Role-based routing example: <code>idea_provider: claude</code> · <code>task_provider: cursor</code></p>
+    </section>
+
+    <section class="lp-section lp-compare-section">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Plans at a glance</p>
+        <h2>Personal vs Team</h2>
+        <p class="lp-section-lead">Start solo for free. Upgrade when you need shared projects, invites, and a central API pool.</p>
+      </div>
+      <div class="lp-compare-wrap">
+        <table class="lp-compare">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Personal</th>
+              <th scope="col">Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Price</th>
+              <td>Free</td>
+              <td>$49/seat/mo (demo billing)</td>
+            </tr>
+            <tr>
+              <th scope="row">Projects</th>
+              <td>1 project</td>
+              <td>Shared team project</td>
+            </tr>
+            <tr>
+              <th scope="row">API keys</th>
+              <td>Bring your own</td>
+              <td>Owner-managed shared pool</td>
+            </tr>
+            <tr>
+              <th scope="row">Members</th>
+              <td>Solo</td>
+              <td>Invite by email</td>
+            </tr>
+            <tr>
+              <th scope="row">Forge slug</th>
+              <td>Your workspace</td>
+              <td>One slug for the whole team</td>
+            </tr>
+            <tr>
+              <th scope="row">Best for</th>
+              <td>Hackers &amp; side projects</td>
+              <td>Engineering squads &amp; agencies</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="pricing" class="lp-section lp-pricing">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">Pricing</p>
+        <h2>Simple, transparent plans</h2>
+        <p class="lp-section-lead">No credit card for Personal. Team billing is demo-mode today — full TON payments on the roadmap.</p>
+      </div>
+      <div class="lp-plans" id="pricingCards">Loading plans…</div>
+    </section>
+
+    <section id="faq" class="lp-section lp-faq-section">
+      <div class="lp-section-head">
+        <p class="lp-eyebrow">FAQ</p>
+        <h2>Common questions</h2>
+      </div>
+      <div class="lp-faq">
+        <details>
+          <summary>Does the demo work without signing in?</summary>
+          <p>Yes. <strong>Try demo</strong> opens the controller in offline mode with sample kanban data — no API or account needed. Forge, agents, and sign-in require a running <code>aityuahn serve</code> backend.</p>
+        </details>
+        <details>
+          <summary>Why do I paste an API URL when signing in on GitHub Pages?</summary>
+          <p>GitHub Pages hosts the static UI only. Registration, JWT auth, and SaaS APIs live on your backend — typically <code>http://127.0.0.1:8765</code> locally, or a deployed instance reachable from your browser.</p>
+        </details>
+        <details>
+          <summary>How do team invites work?</summary>
+          <p>Register on Team plan, create a team project, then invite members by email. They must register first. The project owner sets shared API keys under <strong>Team &amp; API</strong> so everyone uses the same provider config and codebase slug.</p>
+        </details>
+        <details>
+          <summary>Can I use only the CLI?</summary>
+          <p>Absolutely. The full forge lifecycle — <code>aityuahn idea</code>, <code>backlog</code>, <code>forge</code>, <code>task</code>, <code>test</code> — works without the web UI. The controller is optional for visual tracking and team features.</p>
+        </details>
+        <details>
+          <summary>Where is project data stored?</summary>
+          <p>Ideas and backlogs live in <code>.python/ideas</code> and <code>.python/backlogs</code>. Scaffolded repos sit under your configured <code>workspace_root</code>. SaaS accounts and team metadata are stored by the serve backend.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="lp-cta-band">
+      <h2>Ready to forge your next project?</h2>
+      <p>Start free with Personal, explore the demo controller, or spin up <code>aityuahn serve</code> and connect your AI keys in minutes.</p>
+      <div class="lp-cta">
+        <button type="button" id="btnCtaSignUp" class="lp-btn primary lg">Create free account</button>
+        <a href="/AityUahn/controller.html?demo=1" class="lp-btn lg">Try demo</a>
+      </div>
+    </section>
+  </main>
 
   <footer class="lp-footer">
-    <p>© AityUahn · <a href="/AityUahn/docs.html">Documentation</a> · <a href="https://github.com/HyperlinksSpace/AityUahn">GitHub</a></p>
+    <div class="lp-footer-grid">
+      <div>
+        <p class="lp-footer-brand">AityUahn</p>
+        <p class="lp-footer-tagline">Agentic forge for teams — ideas, backlogs, scaffolds, and delivery in one flow.</p>
+      </div>
+      <div>
+        <p class="lp-footer-heading">Product</p>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/AityUahn/controller.html?demo=1">Demo controller</a>
+      </div>
+      <div>
+        <p class="lp-footer-heading">Resources</p>
+        <a href="/AityUahn/docs.html">Documentation</a>
+        <a href="https://github.com/HyperlinksSpace/AityUahn">GitHub</a>
+        <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">CLI reference</a>
+      </div>
+    </div>
+    <p class="lp-footer-copy">© AityUahn · MIT License</p>
   </footer>
 
   <dialog id="authDialog" class="lp-dialog">
