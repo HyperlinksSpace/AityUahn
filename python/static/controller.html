@@ -131,7 +131,26 @@
             <input id="inviteEmail" placeholder="teammate@company.com" />
             <button type="button" id="btnInvite" class="primary">Invite</button>
           </div>
-          <button type="button" id="btnUpgradeTeam" class="hidden" style="margin-top:0.75rem">Upgrade to Team plan</button>
+          <button type="button" id="btnUpgradeTeam" class="hidden" style="margin-top:0.75rem">Pay for Team plan</button>
+          <div id="tonPaymentPanel" class="ton-payment hidden">
+            <h4>Complete Team payment</h4>
+            <p class="muted">Send exactly <strong id="tonAmount">—</strong> TON with the payment ID as the transfer comment (memo).</p>
+            <label>Wallet address</label>
+            <div class="row">
+              <input id="tonWallet" readonly />
+              <button type="button" id="btnCopyWallet">Copy</button>
+            </div>
+            <label>Payment ID (comment / memo)</label>
+            <div class="row">
+              <input id="tonComment" readonly />
+              <button type="button" id="btnCopyComment">Copy</button>
+            </div>
+            <div class="row" style="margin-top:0.75rem">
+              <a id="tonDeeplink" class="primary" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;padding:0.45rem 0.9rem;text-decoration:none;border-radius:8px">Open in TON wallet</a>
+              <button type="button" id="btnCheckPayment">Check payment</button>
+            </div>
+            <p id="tonPaymentStatus" class="muted" style="margin-top:0.5rem"></p>
+          </div>
         </div>
         <div class="panel">
           <h3>Shared API (team owner)</h3>

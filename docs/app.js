@@ -23,6 +23,8 @@
   let providers = [];
   let teamProjects = [];
   let activeTeamProject = null;
+  let tonPollTimer = null;
+  let activeTonPaymentId = null;
 
   function authHeaders() {
     const h = {};
@@ -41,6 +43,7 @@
     const newProj = document.getElementById("btnNewProject");
     const teamList = document.getElementById("teamProjectList");
     const upgrade = document.getElementById("btnUpgradeTeam");
+    const tonPanel = document.getElementById("tonPaymentPanel");
     if (!badge) return;
     if (user) {
       badge.textContent = `${user.name} · ${user.plan}`;
@@ -48,12 +51,125 @@
       signOut?.classList.remove("hidden");
       newProj?.classList.remove("hidden");
       teamList?.classList.remove("hidden");
-      upgrade?.classList.toggle("hidden", user.plan === "team");
+      const isTeam = user.plan === "team";
+      upgrade?.classList.toggle("hidden", isTeam);
+      if (isTeam) {
+        tonPanel?.classList.add("hidden");
+        stopTonPoll();
+      }
     } else {
       badge.classList.add("hidden");
       signOut?.classList.add("hidden");
       newProj?.classList.add("hidden");
       teamList?.classList.add("hidden");
+      upgrade?.classList.add("hidden");
+      tonPanel?.classList.add("hidden");
+      stopTonPoll();
+    }
+  }
+
+  async function loadBillingSettings() {
+    if (!AityAuth.getToken() || mode !== "live") return null;
+    try {
+      return await AityAuth.saasApi("/billing/ton-config");
+    } catch {
+      try {
+        const plans = await AityAuth.saasApi("/pricing");
+        const team = plans.find((p) => p.id === "team");
+        if (team) {
+          return { team_price_ton: team.price_ton ?? parseFloat(String(team.price_label)), enabled: true };
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    }
+  }
+
+  function setUpgradeButtonLabel(priceTon) {
+    const btn = document.getElementById("btnUpgradeTeam");
+    if (!btn || !priceTon) return;
+    btn.textContent = `Pay ${priceTon} TON — Team plan`;
+  }
+
+  function stopTonPoll() {
+    if (tonPollTimer) {
+      clearInterval(tonPollTimer);
+      tonPollTimer = null;
+    }
+    activeTonPaymentId = null;
+  }
+
+  function showTonPayment(payment) {
+    const panel = document.getElementById("tonPaymentPanel");
+    if (!panel || !payment?.payment_id) return;
+    activeTonPaymentId = payment.payment_id;
+    document.getElementById("tonAmount").textContent = String(payment.amount_ton ?? 10);
+    document.getElementById("tonWallet").value = payment.wallet_address || "";
+    document.getElementById("tonComment").value = payment.comment || payment.payment_id;
+    const link = document.getElementById("tonDeeplink");
+    if (link) link.href = payment.deeplink || "#";
+    document.getElementById("tonPaymentStatus").textContent =
+      payment.status === "completed"
+        ? "Payment confirmed — Team plan active."
+        : "Waiting for on-chain deposit…";
+    panel.classList.remove("hidden");
+    document.getElementById("btnUpgradeTeam")?.classList.add("hidden");
+    if (payment.status !== "completed" && !tonPollTimer) {
+      tonPollTimer = setInterval(() => checkTonPayment(false), 8000);
+    }
+  }
+
+  async function checkTonPayment(manual = true) {
+    if (!activeTonPaymentId || !AityAuth.getToken()) return;
+    try {
+      const payment = await AityAuth.saasApi(`/billing/team-payment/${activeTonPaymentId}`);
+      showTonPayment(payment);
+      if (payment.status === "completed" || payment.plan === "team") {
+        stopTonPoll();
+        AityAuth.setSession(AityAuth.getToken(), { ...currentUser(), plan: "team" });
+        updateAuthUI();
+        toast("Team plan activated — thank you!");
+      } else if (manual) {
+        toast("Payment not detected yet — send TON with the exact comment");
+      }
+    } catch (ex) {
+      if (manual) toast(String(ex.message || ex), true);
+    }
+  }
+
+  async function startTeamPayment() {
+    try {
+      requireLive();
+      const payment = await AityAuth.saasApi("/billing/team-payment", { method: "POST", body: "{}" });
+      showTonPayment(payment);
+      setView("team");
+      toast(`Send ${payment.amount_ton ?? "the required"} TON with the payment ID as comment`);
+    } catch (ex) {
+      const msg = String(ex.message || ex);
+      if (msg.includes("503") || msg.toLowerCase().includes("wallet not configured")) {
+        try {
+          const res = await AityAuth.saasApi("/billing/upgrade-team", { method: "POST", body: "{}" });
+          AityAuth.setSession(AityAuth.getToken(), { ...currentUser(), plan: res.plan });
+          updateAuthUI();
+          toast(res.message || "Upgraded (demo mode)");
+          return;
+        } catch (inner) {
+          toast(String(inner.message || inner), true);
+          return;
+        }
+      }
+      toast(msg, true);
+    }
+  }
+
+  async function resumeTonPaymentIfAny() {
+    if (!AityAuth.getToken() || currentUser()?.plan === "team") return;
+    try {
+      const payment = await AityAuth.saasApi("/billing/team-payment");
+      if (payment?.payment_id) showTonPayment(payment);
+    } catch {
+      /* ignore */
     }
   }
 
@@ -703,21 +819,34 @@
       }
     });
 
-    document.getElementById("btnUpgradeTeam")?.addEventListener("click", async () => {
-      try {
-        const res = await AityAuth.saasApi("/billing/upgrade-team", { method: "POST", body: "{}" });
-        AityAuth.setSession(AityAuth.getToken(), { ...currentUser(), plan: res.plan });
-        updateAuthUI();
-        toast(res.message || "Upgraded");
-      } catch (ex) {
-        toast(String(ex.message || ex), true);
+    document.getElementById("btnUpgradeTeam")?.addEventListener("click", startTeamPayment);
+    document.getElementById("btnCheckPayment")?.addEventListener("click", () => checkTonPayment(true));
+    document.getElementById("btnCopyWallet")?.addEventListener("click", async () => {
+      const v = document.getElementById("tonWallet")?.value;
+      if (v) {
+        await navigator.clipboard.writeText(v);
+        toast("Wallet copied");
+      }
+    });
+    document.getElementById("btnCopyComment")?.addEventListener("click", async () => {
+      const v = document.getElementById("tonComment")?.value;
+      if (v) {
+        await navigator.clipboard.writeText(v);
+        toast("Payment ID copied");
       }
     });
 
     updateAuthUI();
     await resolveBackend(new URLSearchParams(location.search).get("demo") === "1");
     await loadProviders();
+    const billing = await loadBillingSettings();
+    if (billing?.team_price_ton) setUpgradeButtonLabel(billing.team_price_ton);
     await refresh();
+    await resumeTonPaymentIfAny();
+    if (new URLSearchParams(location.search).get("upgrade") === "ton" && currentUser()?.plan !== "team") {
+      setView("team");
+      startTeamPayment();
+    }
     setView("kanban");
   }
 

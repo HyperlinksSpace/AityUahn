@@ -69,4 +69,8 @@ def test_pricing_public(tmp_path: Path):
     client = TestClient(create_app(forge))
     r = client.get("/api/saas/pricing")
     assert r.status_code == 200
-    assert len(r.json()) == 2
+    plans = r.json()
+    assert len(plans) == 2
+    team = next(p for p in plans if p["id"] == "team")
+    assert "TON" in team["price_label"]
+    assert team.get("payment_method") == "ton"

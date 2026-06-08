@@ -61,7 +61,7 @@
     } catch {
       wrap.innerHTML = `
         <article class="lp-plan"><h3>Personal</h3><div class="lp-price">Free</div><ul><li>1 project</li><li>Bring your own API keys</li></ul><button type="button" class="lp-btn" id="planPersonal">Start free</button></article>
-        <article class="lp-plan featured"><h3>Team</h3><div class="lp-price">$49/seat/mo</div><ul><li>Shared codebase &amp; API</li><li>Invite members</li></ul><button type="button" class="lp-btn primary" id="planTeam">Get Team access</button></article>`;
+        <article class="lp-plan featured"><h3>Team</h3><div class="lp-price">10 TON</div><ul><li>Shared codebase &amp; API</li><li>Invite members</li><li>Pay with TON wallet</li></ul><button type="button" class="lp-btn primary" id="planTeam">Get Team access</button></article>`;
       document.getElementById("planPersonal").onclick = () => openAuth("register");
       document.getElementById("planTeam").onclick = () => {
         document.getElementById("authPlan").value = "team";
@@ -117,7 +117,11 @@
       const data = await AityAuth.saasApi(path, { method: "POST", body: JSON.stringify(body) });
       AityAuth.setSession(data.access_token, data.user);
       dialog.close();
-      location.href = "controller.html";
+      if (data.requires_ton_payment || (mode === "register" && plan === "team")) {
+        location.href = "controller.html?upgrade=ton";
+      } else {
+        location.href = "controller.html";
+      }
     } catch (ex) {
       errEl.textContent = String(ex.message || ex);
       errEl.classList.remove("hidden");

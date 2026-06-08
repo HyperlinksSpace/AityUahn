@@ -1,0 +1,41 @@
+# AityUahn — SaaS & billing settings
+#
+# Edit this file to tune pricing, wallet, and plan copy shown on the landing page and in the app.
+# Optional: toncenter API key can stay in .env (AITYUAHN_TONCENTER_API_KEY) if you prefer.
+#
+# Env overrides (optional):
+#   AITYUAHN_SAAS_CONFIG          path to this file
+#   AITYUAHN_TON_WALLET_ADDRESS   overrides ton_wallet_address
+#   AITYUAHN_TON_TEAM_PRICE       overrides team_price_ton
+#   AITYUAHN_TON_POLL_INTERVAL    overrides poll_interval_sec
+#   AITYUAHN_TON_NETWORK          overrides ton_network (mainnet | testnet)
+
+# Wallet that receives Team plan payments (user-friendly UQ… or EQ… address)
+ton_wallet_address: "UQDFuzKogL4d5VYZxkFGeIcCwTprgzJWZ5PsqCmRJ9F1iUv3"
+
+# Team plan selling price (TON)
+team_price_ton: 10
+
+# How often the server checks the wallet for incoming deposits (seconds)
+poll_interval_sec: 10
+
+# TON network for toncenter API (mainnet | testnet)
+ton_network: mainnet
+
+# Plan names and marketing copy (optional — defaults used if omitted)
+plans:
+  personal:
+    name: Personal
+    price_label: Free
+    features:
+      - 1 user · 1 active project
+      - Kanban, backlog & agent prompts
+      - Bring your own API keys
+      - Community support
+  team:
+    name: Team
+    features:
+      - Unlimited team members per project
+      - Shared codebase & single API pool
+      - Owner-managed provider keys for the team
+      - Pay once with TON — no card required

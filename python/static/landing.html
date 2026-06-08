@@ -187,7 +187,7 @@
             <tr>
               <th scope="row">Price</th>
               <td>Free</td>
-              <td>$49/seat/mo (demo billing)</td>
+              <td>10 TON (one-time)</td>
             </tr>
             <tr>
               <th scope="row">Projects</th>
@@ -223,7 +223,7 @@
       <div class="lp-section-head">
         <p class="lp-eyebrow">Pricing</p>
         <h2>Simple, transparent plans</h2>
-        <p class="lp-section-lead">No credit card for Personal. Team billing is demo-mode today — full TON payments on the roadmap.</p>
+        <p class="lp-section-lead">Personal is free forever. Team unlocks collaboration — pay once with 10 TON via your wallet (Tonkeeper, etc.).</p>
       </div>
       <div class="lp-plans" id="pricingCards">Loading plans…</div>
     </section>
@@ -244,7 +244,11 @@
         </details>
         <details>
           <summary>How do team invites work?</summary>
-          <p>Register on Team plan, create a team project, then invite members by email. They must register first. The project owner sets shared API keys under <strong>Team &amp; API</strong> so everyone uses the same provider config and codebase slug.</p>
+          <p>After Team plan is active, create a team project and invite members by email (they must register first). The project owner sets shared API keys under <strong>Team &amp; API</strong> so everyone uses the same provider config and codebase slug.</p>
+        </details>
+        <details>
+          <summary>How do Team payments work?</summary>
+          <p>Click <strong>Pay 10 TON — Team plan</strong> in the controller. You receive a wallet address, amount, and a unique payment ID. Send exactly 10 TON with that ID as the transfer comment (memo). The backend polls your wallet via <a href="https://toncenter.com">toncenter</a> and activates Team when the deposit arrives — same flow as the <a href="https://github.com/toncenter/examples/blob/main/deposits.js">toncenter deposits example</a>.</p>
         </details>
         <details>
           <summary>Can I use only the CLI?</summary>

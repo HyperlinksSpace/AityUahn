@@ -12,10 +12,12 @@ import jwt
 
 from python.saas.models import (
     MemberRole,
+    PaymentStatus,
     Plan,
     PricingPlan,
     ProjectMember,
     TeamProject,
+    TonPayment,
     User,
     UserPublic,
     utc_now,
@@ -50,6 +52,7 @@ class SaaSStore:
         self.users_file = self.data_dir / "users.json"
         self.projects_file = self.data_dir / "projects.json"
         self.members_file = self.data_dir / "members.json"
+        self.payments_file = self.data_dir / "payments.json"
 
     def _load(self, path: Path, key: str) -> list[dict]:
         if not path.is_file():
@@ -76,6 +79,81 @@ class SaaSStore:
 
     def save_members(self, members: list[ProjectMember]) -> None:
         self._save(self.members_file, "members", [m.model_dump(mode="json") for m in members])
+
+    def _load_payments_doc(self) -> dict:
+        if not self.payments_file.is_file():
+            return {"last_poll_utime": 0, "payments": []}
+        return json.loads(self.payments_file.read_text(encoding="utf-8"))
+
+    def _save_payments_doc(self, doc: dict) -> None:
+        self.payments_file.write_text(json.dumps(doc, indent=2, default=str), encoding="utf-8")
+
+    def list_payments(self) -> list[TonPayment]:
+        return [TonPayment.model_validate(p) for p in self._load_payments_doc().get("payments", [])]
+
+    def save_payment(self, payment: TonPayment) -> None:
+        doc = self._load_payments_doc()
+        rows = doc.get("payments", [])
+        for i, row in enumerate(rows):
+            if row.get("id") == payment.id:
+                rows[i] = payment.model_dump(mode="json")
+                break
+        else:
+            rows.append(payment.model_dump(mode="json"))
+        doc["payments"] = rows
+        self._save_payments_doc(doc)
+
+    def get_payment(self, payment_id: str) -> TonPayment | None:
+        return next((p for p in self.list_payments() if p.id == payment_id), None)
+
+    def find_pending_payment(self, user_id: str) -> TonPayment | None:
+        return next(
+            (
+                p
+                for p in self.list_payments()
+                if p.user_id == user_id and p.status == PaymentStatus.PENDING
+            ),
+            None,
+        )
+
+    def complete_payment(self, payment_id: str, tx_ref: str, sender: str) -> TonPayment | None:
+        doc = self._load_payments_doc()
+        for i, row in enumerate(doc.get("payments", [])):
+            if row.get("id") != payment_id:
+                continue
+            payment = TonPayment.model_validate(row)
+            if payment.status != PaymentStatus.PENDING:
+                return payment
+            updated = payment.model_copy(
+                update={
+                    "status": PaymentStatus.COMPLETED,
+                    "ton_tx_ref": tx_ref,
+                    "sender_address": sender,
+                    "completed_at": utc_now(),
+                }
+            )
+            doc["payments"][i] = updated.model_dump(mode="json")
+            self._save_payments_doc(doc)
+            return updated
+        return None
+
+    def last_poll_utime(self) -> int:
+        return int(self._load_payments_doc().get("last_poll_utime") or 0)
+
+    def set_last_poll_utime(self, utime: int) -> None:
+        doc = self._load_payments_doc()
+        doc["last_poll_utime"] = max(int(doc.get("last_poll_utime") or 0), int(utime))
+        self._save_payments_doc(doc)
+
+    def upgrade_user_plan(self, user_id: str, plan: Plan) -> User | None:
+        users = self.list_users()
+        for i, user in enumerate(users):
+            if user.id == user_id:
+                updated = user.model_copy(update={"plan": plan})
+                users[i] = updated
+                self.save_users(users)
+                return updated
+        return None
 
     def get_user_by_email(self, email: str) -> User | None:
         email = email.strip().lower()
@@ -111,12 +189,17 @@ class SaaSStore:
     def register(self, email: str, password: str, name: str, plan: Plan) -> tuple[User, str]:
         if self.get_user_by_email(email):
             raise ValueError("Email already registered")
+        from python.saas.ton import wallet_configured
+
+        effective_plan = plan
+        if plan == Plan.TEAM and wallet_configured():
+            effective_plan = Plan.PERSONAL
         user = User(
             id=f"U-{uuid.uuid4().hex[:10]}",
             email=email.strip().lower(),
             name=name.strip() or email.split("@")[0],
             password_hash=_hash_password(password),
-            plan=plan,
+            plan=effective_plan,
         )
         users = self.list_users()
         users.append(user)
@@ -137,12 +220,18 @@ class SaaSStore:
         return user
 
     def pricing(self) -> list[PricingPlan]:
+        from python.saas.settings import plan_copy, team_price_label, team_price_ton
+
+        personal = plan_copy("personal")
+        team = plan_copy("team")
         return [
             PricingPlan(
                 id=Plan.PERSONAL,
-                name="Personal",
-                price_label="Free",
-                features=[
+                name=personal.name if personal else "Personal",
+                price_label=personal.price_label if personal and personal.price_label else "Free",
+                features=personal.features
+                if personal and personal.features
+                else [
                     "1 user · 1 active project",
                     "Kanban, backlog & agent prompts",
                     "Bring your own API keys",
@@ -151,13 +240,17 @@ class SaaSStore:
             ),
             PricingPlan(
                 id=Plan.TEAM,
-                name="Team",
-                price_label="$49 / seat / mo",
-                features=[
+                name=team.name if team else "Team",
+                price_label=team_price_label(),
+                price_ton=team_price_ton(),
+                payment_method="ton",
+                features=team.features
+                if team and team.features
+                else [
                     "Unlimited team members per project",
                     "Shared codebase & single API pool",
                     "Owner-managed provider keys for the team",
-                    "Priority support & SSO (roadmap)",
+                    "Pay once with TON — no card required",
                 ],
             ),
         ]

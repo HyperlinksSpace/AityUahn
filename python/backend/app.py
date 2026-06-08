@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -59,14 +60,21 @@ class PromptRequest(BaseModel):
 
 def create_app(forge: LForge | None = None) -> FastAPI:
     engine = forge or LForge()
-    app = FastAPI(title="AityUahn API", version="0.1.0")
+    saas_router, ton_service = create_saas_router(engine)
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        ton_service.start_background_poll()
+        yield
+
+    app = FastAPI(title="AityUahn API", version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.include_router(create_saas_router(engine))
+    app.include_router(saas_router)
 
     @app.get("/api/health")
     def health() -> dict[str, Any]:

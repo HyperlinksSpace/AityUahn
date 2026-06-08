@@ -267,3 +267,15 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   max-width: 480px;
   width: 100%;
 }
+
+.ton-payment {
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.ton-payment h4 { margin: 0 0 0.5rem; font-size: 0.92rem; }
+.ton-payment label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.82rem; color: var(--muted); }
+.ton-payment input { width: 100%; }
+.ton-payment a.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }

@@ -68,3 +68,23 @@ class PricingPlan(BaseModel):
     name: str
     price_label: str
     features: list[str]
+    price_ton: float | None = None
+    payment_method: str | None = None
+
+
+class PaymentStatus(str, Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    EXPIRED = "expired"
+
+
+class TonPayment(BaseModel):
+    id: str
+    user_id: str
+    amount_nano: int
+    wallet_address: str
+    status: PaymentStatus = PaymentStatus.PENDING
+    sender_address: str | None = None
+    ton_tx_ref: str | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+    completed_at: datetime | None = None

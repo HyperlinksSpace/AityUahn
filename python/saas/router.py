@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 from python.forge import LForge
 from python.saas.models import AuthToken, MemberRole, Plan
 from python.saas.store import SaaSStore
+from python.saas.ton import TonPaymentService, wallet_configured
+from python.saas.settings import team_price_ton
 
 
 class RegisterRequest(BaseModel):
@@ -40,6 +42,7 @@ class ApiConfigRequest(BaseModel):
 
 def create_saas_router(forge: LForge) -> APIRouter:
     store = SaaSStore(forge.config.forge_data_dir / "saas")
+    ton = TonPaymentService(store)
     router = APIRouter(prefix="/api/saas", tags=["saas"])
 
     def current_user(authorization: str | None = Header(default=None)):
@@ -55,13 +58,70 @@ def create_saas_router(forge: LForge) -> APIRouter:
     def pricing():
         return [p.model_dump(mode="json") for p in store.pricing()]
 
-    @router.post("/auth/register", response_model=AuthToken)
+    @router.get("/billing/ton-config")
+    def ton_config():
+        return {
+            "enabled": wallet_configured(),
+            "team_price_ton": team_price_ton(),
+            "payment_method": "ton" if wallet_configured() else None,
+        }
+
+    @router.post("/billing/team-payment")
+    async def create_team_payment(user=Depends(current_user)):
+        if user.plan == Plan.TEAM:
+            raise HTTPException(400, "Already on Team plan")
+        try:
+            payment = ton.create_team_payment(user.id)
+        except ValueError as e:
+            raise HTTPException(503, str(e)) from e
+        return ton.payment_payload(payment)
+
+    @router.get("/billing/team-payment/{payment_id}")
+    async def get_team_payment(payment_id: str, user=Depends(current_user)):
+        payment = store.get_payment(payment_id)
+        if not payment or payment.user_id != user.id:
+            raise HTTPException(404, "Payment not found")
+        if payment.status.value == "pending":
+            await ton.poll_once()
+            payment = store.get_payment(payment_id) or payment
+            refreshed = store.get_user(user.id)
+            if refreshed and refreshed.plan == Plan.TEAM:
+                payment = store.get_payment(payment_id) or payment
+        payload = ton.payment_payload(payment)
+        payload["plan"] = store.get_user(user.id).plan.value if store.get_user(user.id) else user.plan.value
+        return payload
+
+    @router.get("/billing/team-payment")
+    async def get_active_team_payment(user=Depends(current_user)):
+        if user.plan == Plan.TEAM:
+            return {"status": "completed", "plan": Plan.TEAM.value}
+        payment = store.find_pending_payment(user.id)
+        if not payment:
+            return {"status": "none"}
+        await ton.poll_once()
+        payment = store.find_pending_payment(user.id) or store.get_payment(payment.id)
+        refreshed = store.get_user(user.id)
+        if refreshed and refreshed.plan == Plan.TEAM:
+            return {"status": "completed", "plan": Plan.TEAM.value}
+        if payment:
+            return ton.payment_payload(payment)
+        return {"status": "none"}
+
+    @router.post("/auth/register")
     def register(body: RegisterRequest):
+        requested_team = body.plan == Plan.TEAM
         try:
             user, token = store.register(body.email, body.password, body.name, body.plan)
         except ValueError as e:
             raise HTTPException(400, str(e)) from e
-        return AuthToken(access_token=token, user=store.public_user(user))
+        response = AuthToken(access_token=token, user=store.public_user(user))
+        if requested_team and wallet_configured() and user.plan != Plan.TEAM:
+            return {
+                **response.model_dump(mode="json"),
+                "requires_ton_payment": True,
+                "message": "Account created. Complete the TON payment to activate Team plan.",
+            }
+        return response
 
     @router.post("/auth/login", response_model=AuthToken)
     def login(body: LoginRequest):
@@ -161,6 +221,11 @@ def create_saas_router(forge: LForge) -> APIRouter:
 
     @router.post("/billing/upgrade-team")
     def upgrade_team(user=Depends(current_user)):
+        if wallet_configured():
+            raise HTTPException(
+                402,
+                f"Team plan requires a {team_price_ton():g} TON payment. Use POST /api/saas/billing/team-payment.",
+            )
         users = store.list_users()
         for i, u in enumerate(users):
             if u.id == user.id:
@@ -169,8 +234,8 @@ def create_saas_router(forge: LForge) -> APIRouter:
                 return {
                     "ok": True,
                     "plan": Plan.TEAM.value,
-                    "message": "Upgraded to Team plan (demo billing — integrate Stripe for production).",
+                    "message": "Upgraded to Team plan (demo mode — set ton_wallet_address in saas.yaml for TON billing).",
                 }
         raise HTTPException(404, "User not found")
 
-    return router
+    return router, ton

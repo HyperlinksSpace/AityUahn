@@ -1,5 +1,7 @@
 B2B SaaS (v0.2)
 
+Make it work, lal
+
 - All languages
 
 - Payment (TON)
