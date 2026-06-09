@@ -18,6 +18,7 @@
     </div>
     <div class="header-right">
       <span id="userBadge" class="user-badge hidden"></span>
+      <button type="button" id="btnSignIn" class="hidden">Sign in</button>
       <span id="statusPill" class="status-pill">Connecting…</span>
       <button type="button" id="btnSignOut" class="hidden">Sign out</button>
     </div>
@@ -34,14 +35,25 @@
   </div>
 
   <div id="blockedOverlay" class="blocked-overlay hidden">
-    <div class="blocked-card">
-      <h2 style="margin-top:0">Connect your AityUahn API</h2>
-      <p class="muted">Run <code>aityuahn serve</code> or use the hosted API. Team features require sign-in.</p>
+    <div class="blocked-card setup-card">
+      <h2 style="margin-top:0">First run — start your backend</h2>
+      <p class="muted">The controller UI can run on GitHub Pages, but forge, agents, and accounts need a local (or deployed) API.</p>
+      <ol class="setup-steps">
+        <li>Open the AityUahn repo in a terminal</li>
+        <li><code>python -m venv .venv</code> then activate it</li>
+        <li><code>pip install -e ".[dev]"</code></li>
+        <li><code>cp config/forge.example.yaml forge.yaml</code> — edit workspace &amp; providers</li>
+        <li><code>cp .env.example .env</code> — add API keys (optional for sign-up)</li>
+        <li><code>aityuahn serve</code> — default API at <code>http://127.0.0.1:8765</code></li>
+      </ol>
+      <label for="overlayApiInput">Backend URL</label>
+      <input id="overlayApiInput" placeholder="http://127.0.0.1:8765" />
       <div class="row" style="margin-top:1rem">
         <button type="button" id="btnOverlayConnect" class="primary">Connect</button>
         <button type="button" id="btnOverlayDemo">Try offline demo</button>
-        <a href="landing.html" class="lp-btn ghost" style="text-decoration:none;padding:0.45rem 0.75rem">Sign in</a>
+        <button type="button" id="btnOverlaySignIn">Sign in / Register</button>
       </div>
+      <p class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account.</p>
     </div>
   </div>
 
@@ -165,6 +177,27 @@
       </section>
     </main>
   </div>
+
+  <dialog id="authDialog" class="blocked-card" style="border:1px solid var(--border);max-width:420px">
+    <form method="dialog" id="authForm">
+      <h3 id="authTitle" style="margin-top:0">Sign in</h3>
+      <p class="muted" id="authHint">Uses the connected backend above.</p>
+      <label>Name<input id="authName" placeholder="Your name" /></label>
+      <label>Email<input id="authEmail" type="email" required placeholder="you@company.com" /></label>
+      <label>Password<input id="authPassword" type="password" required minlength="6" /></label>
+      <label id="authPlanWrap" class="hidden">Plan
+        <select id="authPlan">
+          <option value="personal">Personal (free)</option>
+          <option value="team">Team</option>
+        </select>
+      </label>
+      <p id="authError" class="toast error" style="position:static;display:none;margin-top:0.5rem"></p>
+      <div class="row" style="margin-top:0.75rem">
+        <button type="button" id="authToggle">Create account</button>
+        <button type="submit" class="primary">Continue</button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="newProjectDialog" class="blocked-card" style="border:1px solid var(--border);max-width:420px">
     <form method="dialog" id="newProjectForm">

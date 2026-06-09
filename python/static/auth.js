@@ -117,5 +117,6 @@
     probeApi,
     saasApi,
     isLocalHost,
+    PENDING_AUTH_KEY: "aityuahn-pending-auth",
   };
 })();

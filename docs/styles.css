@@ -279,3 +279,22 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
 .ton-payment label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.82rem; color: var(--muted); }
 .ton-payment input { width: 100%; }
 .ton-payment a.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+
+.setup-card { max-width: 520px; }
+.setup-steps {
+  margin: 0.75rem 0 1rem;
+  padding-left: 1.25rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+.setup-steps code {
+  font-size: 0.82rem;
+  background: var(--bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+.setup-note { font-size: 0.82rem; margin: 0.75rem 0 0; }
+#authDialog label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.85rem; color: var(--muted); }
+#authDialog input, #authDialog select { width: 100%; }
+#btnSignIn { margin: 0; font-size: 0.85rem; }

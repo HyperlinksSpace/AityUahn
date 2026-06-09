@@ -1,16 +1,14 @@
 (() => {
+  const PENDING_AUTH_KEY = "aityuahn-pending-auth";
   const dialog = document.getElementById("authDialog");
   const form = document.getElementById("authForm");
   const title = document.getElementById("authTitle");
   const planWrap = document.getElementById("authPlanWrap");
   const errEl = document.getElementById("authError");
-  const apiInput = document.getElementById("authApiBase");
   let mode = "login";
 
-  async function initApiField() {
+  async function initBanner() {
     await AityAuth.loadConfig();
-    const base = AityAuth.readApiBase();
-    if (base) apiInput.value = base;
     if (location.hostname.endsWith("github.io")) {
       document.getElementById("apiBanner")?.classList.remove("hidden");
     }
@@ -22,10 +20,24 @@
     document.getElementById("authToggle").textContent = mode === "login" ? "Create account" : "Sign in instead";
     planWrap.classList.toggle("hidden", mode === "login");
     errEl.classList.add("hidden");
-    if (!apiInput.value && AityAuth.isLocalHost()) {
-      apiInput.value = location.origin;
-    }
     dialog.showModal();
+  }
+
+  function authPayload() {
+    return {
+      mode,
+      email: document.getElementById("authEmail").value.trim(),
+      password: document.getElementById("authPassword").value,
+      name: document.getElementById("authName").value.trim(),
+      plan: document.getElementById("authPlan").value,
+    };
+  }
+
+  function redirectToController(payload) {
+    sessionStorage.setItem(PENDING_AUTH_KEY, JSON.stringify(payload));
+    const params = new URLSearchParams({ auth: payload.mode });
+    if (payload.mode === "register" && payload.plan === "team") params.set("upgrade", "ton");
+    location.href = `controller.html?${params}`;
   }
 
   async function loadPricing() {
@@ -91,41 +103,40 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errEl.classList.add("hidden");
-    const apiBase = AityAuth.setApiBase(apiInput.value);
-    if (!apiBase) {
-      errEl.textContent = "Enter your aityuahn serve URL (e.g. http://127.0.0.1:8765)";
+    const payload = authPayload();
+    if (!payload.email || !payload.password) {
+      errEl.textContent = "Enter email and password";
       errEl.classList.remove("hidden");
       return;
     }
-    try {
-      await AityAuth.probeApi(apiBase);
-    } catch (ex) {
-      errEl.textContent = String(ex.message || ex);
-      errEl.classList.remove("hidden");
-      return;
-    }
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value;
-    const name = document.getElementById("authName").value.trim();
-    const plan = document.getElementById("authPlan").value;
-    try {
-      const path = mode === "login" ? "/auth/login" : "/auth/register";
-      const body =
-        mode === "login"
-          ? { email, password }
-          : { email, password, name, plan };
-      const data = await AityAuth.saasApi(path, { method: "POST", body: JSON.stringify(body) });
-      AityAuth.setSession(data.access_token, data.user);
-      dialog.close();
-      if (data.requires_ton_payment || (mode === "register" && plan === "team")) {
-        location.href = "controller.html?upgrade=ton";
-      } else {
-        location.href = "controller.html";
+
+    await AityAuth.loadConfig();
+    const base = AityAuth.readApiBase();
+    if (base) {
+      try {
+        await AityAuth.probeApi(base);
+        AityAuth.setApiBase(base);
+        const path = payload.mode === "login" ? "/auth/login" : "/auth/register";
+        const body =
+          payload.mode === "login"
+            ? { email: payload.email, password: payload.password }
+            : { email: payload.email, password: payload.password, name: payload.name, plan: payload.plan };
+        const data = await AityAuth.saasApi(path, { method: "POST", body: JSON.stringify(body) });
+        AityAuth.setSession(data.access_token, data.user);
+        dialog.close();
+        const params = new URLSearchParams();
+        if (data.requires_ton_payment || (payload.mode === "register" && payload.plan === "team")) {
+          params.set("upgrade", "ton");
+        }
+        location.href = params.toString() ? `controller.html?${params}` : "controller.html";
+        return;
+      } catch (ex) {
+        /* fall through — open controller setup */
       }
-    } catch (ex) {
-      errEl.textContent = String(ex.message || ex);
-      errEl.classList.remove("hidden");
     }
+
+    dialog.close();
+    redirectToController(payload);
   });
 
   if (AityAuth.getUser()) {
@@ -135,6 +146,6 @@
     };
   }
 
-  initApiField();
+  initBanner();
   loadPricing();
 })();

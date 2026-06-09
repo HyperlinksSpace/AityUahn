@@ -29,7 +29,7 @@
       <p class="lp-eyebrow">B2B agentic development platform · v0.2</p>
       <h1>Forge projects with AI.<br />Ship as one team.</h1>
       <p class="lp-lead">Describe an idea in plain language. AityUahn generates structured briefs, AI backlogs, and project scaffolds — then keeps your team aligned on a shared kanban with one API pool and one codebase slug.</p>
-      <p id="apiBanner" class="lp-banner hidden">Sign-in and registration use your <strong>aityuahn serve</strong> backend — not GitHub Pages. Run locally, then paste <code>http://127.0.0.1:8765</code> when signing in.</p>
+      <p id="apiBanner" class="lp-banner hidden">Sign up and sign in open in the app. Start your local backend first — the controller walks you through setup on first run.</p>
       <div class="lp-cta">
         <a href="controller.html?demo=1" class="lp-btn primary lg">Try demo</a>
         <button type="button" id="btnHeroSignUp" class="lp-btn lg">Start free</button>
@@ -239,8 +239,12 @@
           <p>Yes. <strong>Try demo</strong> opens the controller in offline mode with sample kanban data — no API or account needed. Forge, agents, and sign-in require a running <code>aityuahn serve</code> backend.</p>
         </details>
         <details>
+          <summary>How do I sign up or sign in?</summary>
+          <p>Click <strong>Start free</strong> or <strong>Sign in</strong> on the landing page. The app opens the controller, shows how to run <code>aityuahn serve</code> locally, and lets you connect your backend — then you complete registration or sign-in there. No backend URL needed on the landing form.</p>
+        </details>
+        <details>
           <summary>Why do I paste an API URL when signing in on GitHub Pages?</summary>
-          <p>GitHub Pages hosts the static UI only. Registration, JWT auth, and SaaS APIs live on your backend — typically <code>http://127.0.0.1:8765</code> locally, or a deployed instance reachable from your browser.</p>
+          <p>GitHub Pages hosts the static UI only. On first run the controller asks for your backend URL after you start <code>aityuahn serve</code> on your machine (or use a deployed API). Registration and JWT auth run on that backend.</p>
         </details>
         <details>
           <summary>How do team invites work?</summary>
@@ -296,9 +300,6 @@
   <dialog id="authDialog" class="lp-dialog">
     <form method="dialog" id="authForm">
       <h2 id="authTitle">Sign in</h2>
-      <label>API backend <span class="lp-hint">(aityuahn serve URL)</span>
-        <input id="authApiBase" placeholder="http://127.0.0.1:8765" required />
-      </label>
       <label>Name<input id="authName" placeholder="Your name" /></label>
       <label>Email<input id="authEmail" type="email" required placeholder="you@company.com" /></label>
       <label>Password<input id="authPassword" type="password" required minlength="6" /></label>

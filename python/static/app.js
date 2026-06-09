@@ -1,6 +1,7 @@
 (() => {
   const STORAGE_API = "aityuahn-api-base";
   const STORAGE_DEMO = "aityuahn-demo-overrides";
+  const PENDING_AUTH_KEY = "aityuahn-pending-auth";
   const DEMO_DATA_URL = new URL("demo-data.json", document.baseURI).href;
   const CONFIG_URL = new URL("config.json", document.baseURI).href;
 
@@ -25,6 +26,7 @@
   let activeTeamProject = null;
   let tonPollTimer = null;
   let activeTonPaymentId = null;
+  let authMode = null;
 
   function authHeaders() {
     const h = {};
@@ -40,6 +42,7 @@
     const user = currentUser();
     const badge = document.getElementById("userBadge");
     const signOut = document.getElementById("btnSignOut");
+    const signIn = document.getElementById("btnSignIn");
     const newProj = document.getElementById("btnNewProject");
     const teamList = document.getElementById("teamProjectList");
     const upgrade = document.getElementById("btnUpgradeTeam");
@@ -49,6 +52,7 @@
       badge.textContent = `${user.name} · ${user.plan}`;
       badge.classList.remove("hidden");
       signOut?.classList.remove("hidden");
+      signIn?.classList.add("hidden");
       newProj?.classList.remove("hidden");
       teamList?.classList.remove("hidden");
       const isTeam = user.plan === "team";
@@ -60,11 +64,94 @@
     } else {
       badge.classList.add("hidden");
       signOut?.classList.add("hidden");
+      signIn?.classList.toggle("hidden", mode !== "live");
       newProj?.classList.add("hidden");
       teamList?.classList.add("hidden");
       upgrade?.classList.add("hidden");
       tonPanel?.classList.add("hidden");
       stopTonPoll();
+    }
+  }
+
+  function readPendingAuth() {
+    try {
+      return JSON.parse(sessionStorage.getItem(PENDING_AUTH_KEY) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function clearPendingAuth() {
+    sessionStorage.removeItem(PENDING_AUTH_KEY);
+  }
+
+  function fillAuthForm(payload) {
+    if (!payload) return;
+    if (payload.email) document.getElementById("authEmail").value = payload.email;
+    if (payload.name) document.getElementById("authName").value = payload.name;
+    if (payload.plan) document.getElementById("authPlan").value = payload.plan;
+  }
+
+  function openAuthDialog(nextMode = "login", payload = null) {
+    if (mode !== "live") {
+      toast("Connect your backend first (see setup steps)", true);
+      document.getElementById("blockedOverlay")?.classList.remove("hidden");
+      return;
+    }
+    authMode = nextMode;
+    document.getElementById("authTitle").textContent = nextMode === "login" ? "Sign in" : "Create account";
+    document.getElementById("authToggle").textContent = nextMode === "login" ? "Create account" : "Sign in instead";
+    document.getElementById("authPlanWrap").classList.toggle("hidden", nextMode === "login");
+    const errEl = document.getElementById("authError");
+    errEl.style.display = "none";
+    fillAuthForm(payload || readPendingAuth());
+    document.getElementById("authDialog")?.showModal();
+  }
+
+  async function submitAuth(nextMode, fields) {
+    const path = nextMode === "login" ? "/auth/login" : "/auth/register";
+    const body =
+      nextMode === "login"
+        ? { email: fields.email, password: fields.password }
+        : { email: fields.email, password: fields.password, name: fields.name, plan: fields.plan };
+    const data = await AityAuth.saasApi(path, { method: "POST", body: JSON.stringify(body) });
+    AityAuth.setSession(data.access_token, data.user);
+    clearPendingAuth();
+    updateAuthUI();
+    document.getElementById("authDialog")?.close();
+    await loadTeamProjects();
+    await refresh();
+    if (data.requires_ton_payment || (nextMode === "register" && fields.plan === "team")) {
+      setView("team");
+      await startTeamPayment();
+    }
+    toast(nextMode === "login" ? "Signed in" : "Account created");
+    return data;
+  }
+
+  async function completePendingAuth() {
+    const payload = readPendingAuth();
+    if (!payload || mode !== "live") return false;
+    try {
+      await submitAuth(payload.mode || "register", payload);
+      return true;
+    } catch (ex) {
+      openAuthDialog(payload.mode || "register", payload);
+      toast(String(ex.message || ex), true);
+      return false;
+    }
+  }
+
+  async function afterBackendReady() {
+    const params = new URLSearchParams(location.search);
+    const completed = await completePendingAuth();
+    if (completed) return;
+    const pending = readPendingAuth();
+    const modeParam = params.get("auth") || pending?.mode;
+    if (modeParam) openAuthDialog(modeParam, pending);
+    else if (params.get("upgrade") === "ton" && currentUser()?.plan !== "team") {
+      setView("team");
+      startTeamPayment();
     }
   }
 
@@ -296,6 +383,8 @@
     const config = await loadConfig();
     apiBase = readApiBase(config);
     document.getElementById("apiBaseInput").value = apiBase;
+    const overlayInput = document.getElementById("overlayApiInput");
+    if (overlayInput) overlayInput.value = apiBase || "http://127.0.0.1:8765";
 
     if (preferDemo || new URLSearchParams(location.search).get("demo") === "1") {
       await connectDemo();
@@ -304,6 +393,7 @@
     if (apiBase) {
       try {
         await connectLive(apiBase);
+        await afterBackendReady();
         return;
       } catch (e) {
         toast(`API unreachable: ${e.message}`, true);
@@ -601,21 +691,29 @@
       btn.onclick = () => setView(btn.dataset.view);
     });
 
-    const doConnect = async () => {
-      const value = document.getElementById("apiBaseInput").value.trim().replace(/\/$/, "");
+    const doConnect = async (sourceInput) => {
+      const el = sourceInput || document.getElementById("apiBaseInput");
+      const value = el.value.trim().replace(/\/$/, "");
       if (!value) return toast("Enter API URL", true);
+      document.getElementById("apiBaseInput").value = value;
+      const overlayInput = document.getElementById("overlayApiInput");
+      if (overlayInput) overlayInput.value = value;
       try {
+        AityAuth.setApiBase(value);
         await connectLive(value);
+        updateAuthUI();
         await loadProviders();
         await refresh();
+        await afterBackendReady();
         toast("Connected to API");
       } catch (e) {
         toast(String(e), true);
       }
     };
 
-    document.getElementById("btnConnect").onclick = doConnect;
-    document.getElementById("btnOverlayConnect").onclick = doConnect;
+    document.getElementById("btnConnect").onclick = () => doConnect();
+    document.getElementById("btnOverlayConnect").onclick = () =>
+      doConnect(document.getElementById("overlayApiInput") || document.getElementById("apiBaseInput"));
 
     const goDemo = async () => {
       await connectDemo();
@@ -625,6 +723,30 @@
     };
     document.getElementById("btnDemoMode").onclick = goDemo;
     document.getElementById("btnOverlayDemo").onclick = goDemo;
+    document.getElementById("btnOverlaySignIn")?.addEventListener("click", () => openAuthDialog("login"));
+    document.getElementById("btnSignIn")?.addEventListener("click", () => openAuthDialog("login"));
+
+    document.getElementById("authToggle")?.addEventListener("click", () => {
+      openAuthDialog(authMode === "login" ? "register" : "login");
+    });
+    document.getElementById("authForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("authError");
+      errEl.style.display = "none";
+      const fields = {
+        email: document.getElementById("authEmail").value.trim(),
+        password: document.getElementById("authPassword").value,
+        name: document.getElementById("authName").value.trim(),
+        plan: document.getElementById("authPlan").value,
+      };
+      const nextMode = authMode || "login";
+      try {
+        await submitAuth(nextMode, fields);
+      } catch (ex) {
+        errEl.textContent = String(ex.message || ex);
+        errEl.style.display = "block";
+      }
+    });
 
     document.getElementById("btnAddTask").onclick = async () => {
       const title = document.getElementById("taskTitle").value.trim();
@@ -843,7 +965,11 @@
     if (billing?.team_price_ton) setUpgradeButtonLabel(billing.team_price_ton);
     await refresh();
     await resumeTonPaymentIfAny();
-    if (new URLSearchParams(location.search).get("upgrade") === "ton" && currentUser()?.plan !== "team") {
+    if (
+      new URLSearchParams(location.search).get("upgrade") === "ton" &&
+      currentUser()?.plan !== "team" &&
+      mode === "live"
+    ) {
       setView("team");
       startTeamPayment();
     }
