@@ -33,7 +33,7 @@
       <div class="lp-cta">
         <a href="controller.html?demo=1" class="lp-btn primary lg">Try demo</a>
         <button type="button" id="btnHeroSignUp" class="lp-btn lg">Start free</button>
-        <a href="docs.html" class="lp-btn ghost lg">Read docs</a>
+        <a href="docs.html#backend" class="lp-btn ghost lg">Download backend</a>
       </div>
       <ul class="lp-stats" aria-label="Platform highlights">
         <li><strong>CLI + Web</strong><span>Local forge or cloud Docker</span></li>
@@ -240,7 +240,7 @@
         </details>
         <details>
           <summary>How do I sign up or sign in?</summary>
-          <p>Click <strong>Start free</strong> or <strong>Sign in</strong> on the landing page. The app opens the controller, shows how to run <code>aityuahn serve</code> locally, and lets you connect your backend — then you complete registration or sign-in there. No backend URL needed on the landing form.</p>
+          <p>Click <strong>Start free</strong> or <strong>Sign in</strong>, enter your details, then follow the <strong>backend setup guide</strong> on the same page before connecting <code>aityuahn serve</code>. Registration completes after the API is live.</p>
         </details>
         <details>
           <summary>Why do I paste an API URL when signing in on GitHub Pages?</summary>
@@ -300,6 +300,7 @@
   <dialog id="authDialog" class="lp-dialog">
     <form method="dialog" id="authForm">
       <h2 id="authTitle">Sign in</h2>
+      <p id="authBackendHint" class="lp-hint hidden">After you continue, connect your backend on the next screen to finish sign-in.</p>
       <label>Name<input id="authName" placeholder="Your name" /></label>
       <label>Email<input id="authEmail" type="email" required placeholder="you@company.com" /></label>
       <label>Password<input id="authPassword" type="password" required minlength="6" /></label>
@@ -317,7 +318,37 @@
     </form>
   </dialog>
 
+  <div id="lpSetupOverlay" class="lp-setup-overlay hidden">
+    <div class="lp-setup-card">
+      <h2 id="lpSetupTitle">Connect backend to sign in</h2>
+      <p id="lpSetupLead" class="muted">Sign-in and registration run on aityuahn serve — not on GitHub Pages. Download the backend, run it locally (or deploy it), then paste the API URL below.</p>
+      <div class="lp-setup-actions">
+        <a id="lpSetupBackendZip" class="lp-btn primary" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend (ZIP)</a>
+        <a id="lpSetupBackendRepo" class="lp-btn" href="https://github.com/HyperlinksSpace/AityUahn">View on GitHub</a>
+        <a class="lp-btn ghost" href="docs.html#backend">Full setup guide</a>
+      </div>
+      <h3 class="lp-setup-subhead">Install &amp; run</h3>
+      <ol class="lp-setup-steps">
+        <li>Extract the ZIP or <code>git clone</code> the repo, then <code>cd AityUahn</code></li>
+        <li><code>python -m venv .venv</code> — activate: <code>source .venv/Scripts/activate</code> (Git Bash) or <code>.\.venv\Scripts\Activate.ps1</code> (PowerShell)</li>
+        <li><code>pip install -e ".[dev]"</code> — then <code>aityuahn init</code></li>
+        <li><code>cp config/forge.example.yaml forge.yaml</code> and <code>cp .env.example .env</code></li>
+        <li><code>aityuahn serve</code> — API at <code id="lpSetupDefaultApi">http://127.0.0.1:8765</code></li>
+        <li>Verify: <code id="lpSetupHealthUrl">http://127.0.0.1:8765/api/health</code></li>
+      </ol>
+      <label for="lpSetupApiInput">Backend URL (paste here after serve is running)</label>
+      <input id="lpSetupApiInput" placeholder="http://127.0.0.1:8765" />
+      <p id="lpSetupError" class="lp-error hidden"></p>
+      <div class="lp-dialog-actions">
+        <button type="button" id="lpSetupDemo" class="lp-btn ghost">Try offline demo</button>
+        <button type="button" id="lpSetupConnect" class="lp-btn primary">Connect backend</button>
+      </div>
+      <p id="lpSetupNote" class="lp-hint">After you connect, your sign-in form opens automatically with the details you already entered.</p>
+    </div>
+  </div>
+
   <script src="/static/auth.js"></script>
+  <script src="/static/setup.js"></script>
   <script src="/static/landing.js"></script>
 </body>
 </html>

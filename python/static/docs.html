@@ -21,16 +21,108 @@
   <article class="docs-page">
     <h2>Quick start</h2>
     <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="controller.html">Controller</a> for kanban, tasks, forge, and agents.</p>
+    <p>The web UI can run on GitHub Pages, but <strong>forge, agents, sign-in, and team billing require the Python backend</strong> (<code>aityuahn serve</code>). Follow the steps below to download it, run it, and verify everything works.</p>
 
-    <h2>GitHub Pages + local API</h2>
-    <p>Pages hosts the UI only. Run the API on your machine:</p>
+    <h2 id="backend">Download the backend</h2>
+    <p>Get the full repository (CLI + FastAPI server + static UI):</p>
+    <ul class="docs-actions">
+      <li><a id="docsBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip" class="docs-btn">Download ZIP (main branch)</a></li>
+      <li><a id="docsBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn" class="docs-btn ghost">View on GitHub</a></li>
+    </ul>
+    <p>Or clone with Git:</p>
+    <pre id="docsCloneCmd">git clone https://github.com/HyperlinksSpace/AityUahn.git
+cd AityUahn</pre>
+    <p>After extracting or cloning, open a terminal in the <code>AityUahn</code> folder for the next steps.</p>
+
+    <h2 id="prerequisites">Prerequisites</h2>
+    <ul>
+      <li><strong>Python 3.11+</strong> — check with <code>python --version</code></li>
+      <li><strong>Git</strong> (optional, for clone) and a terminal — Git Bash, PowerShell, or WSL on Windows</li>
+      <li><strong>API keys</strong> (optional for first run) — Claude/Cursor keys in <code>.env</code> for AI forge and agents</li>
+    </ul>
+
+    <h2 id="install">Install</h2>
+    <p>Create a virtual environment and install AityUahn in editable mode:</p>
     <pre>cd AityUahn
-python -m venv .venv
+python -m venv .venv</pre>
+    <p><strong>Activate</strong> (pick your shell):</p>
+    <pre># Git Bash / Linux / macOS
 source .venv/Scripts/activate   # Windows Git Bash
-pip install -e ".[dev]"
-cp config/forge.example.yaml forge.yaml
-aityuahn serve</pre>
-    <p>Open the <a href="index.html">Controller</a>, paste <code>http://127.0.0.1:8765</code>, and click <strong>Connect</strong>. From another device use a tunnel (Cloudflare, ngrok) and paste that URL instead.</p>
+source .venv/bin/activate         # Linux / macOS
+
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1</pre>
+    <pre>pip install -e ".[dev]"</pre>
+    <p>Confirm the CLI is available:</p>
+    <pre>aityuahn --help
+aityuahn init</pre>
+
+    <h2 id="configure">Configure</h2>
+    <pre>cp config/forge.example.yaml forge.yaml
+cp .env.example .env</pre>
+    <p>Edit <code>forge.yaml</code>:</p>
+    <ul>
+      <li>Set <code>workspace_root</code> to the parent folder where forged projects should appear (e.g. <code>C:/1/1/1/1/1</code> on Windows).</li>
+      <li>Enable providers and set <code>api_key_env</code> names.</li>
+    </ul>
+    <p>Edit <code>.env</code> and add keys for enabled providers (never commit <code>.env</code>):</p>
+    <pre>ANTHROPIC_API_KEY=sk-ant-...
+CURSOR_API_KEY=crsr_...</pre>
+    <p>Sign-up and team features work without AI keys; forge and agents need at least one configured provider.</p>
+
+    <h2 id="run">Run the backend</h2>
+    <pre>aityuahn serve</pre>
+    <p>Default URLs (keep this terminal open while testing):</p>
+    <ul>
+      <li>Landing: <code id="docsLandingUrl">http://127.0.0.1:8765/</code></li>
+      <li>Controller: <code id="docsControllerUrl">http://127.0.0.1:8765/controller.html</code></li>
+      <li>API health: <code id="docsHealthUrl">http://127.0.0.1:8765/api/health</code></li>
+      <li>OpenAPI: <code id="docsOpenApiUrl">http://127.0.0.1:8765/docs</code></li>
+    </ul>
+    <p>Seed sample kanban data on first run:</p>
+    <pre>aityuahn serve --demo</pre>
+    <p>Use a different port if 8765 is taken: <code>aityuahn serve --port 9000</code> — then use that port in the controller.</p>
+
+    <h2 id="verify">Verify the backend is running</h2>
+    <p>In a <strong>second terminal</strong> (with the server still running):</p>
+    <pre>curl http://127.0.0.1:8765/api/health</pre>
+    <p>You should see JSON like <code>{"ok": true, "workspace": "...", ...}</code>. If curl is unavailable, open the health URL in your browser.</p>
+    <p>Then connect the controller:</p>
+    <ol>
+      <li>Open <a href="controller.html">Controller</a> (local serve URL or GitHub Pages).</li>
+      <li>Paste <code id="docsDefaultApi">http://127.0.0.1:8765</code> into <strong>API backend</strong>.</li>
+      <li>Click <strong>Connect</strong> — status should show <strong>Live API</strong>.</li>
+    </ol>
+    <p>From GitHub Pages (<code>hyperlinksspace.github.io/AityUahn</code>), the UI cannot reach <code>127.0.0.1</code> on your PC unless you use a tunnel (Cloudflare Tunnel, ngrok) and paste the public HTTPS URL instead.</p>
+
+    <h2 id="test-ui">Test the program (UI)</h2>
+    <h3>1. Offline demo (no backend)</h3>
+    <p>Open <a href="controller.html?demo=1">Controller · demo mode</a> or click <strong>Offline demo</strong>. You should see sample kanban tasks. Drag tasks, switch views — forge and agents stay disabled until you connect a live API.</p>
+    <h3>2. Live dashboard</h3>
+    <p>With <code>aityuahn serve --demo</code> running and connected:</p>
+    <ul>
+      <li><strong>Kanban</strong> — change task status on the demo project.</li>
+      <li><strong>Task list</strong> — add a task, mark it done.</li>
+      <li><strong>Forge &amp; backlog</strong> — refresh backlog; run tests (needs a forged project with tests).</li>
+      <li><strong>Agents</strong> — send a prompt (requires API keys in <code>.env</code>).</li>
+      <li><strong>Team &amp; API</strong> — register, sign in, create a team project (runs on the same backend).</li>
+    </ul>
+    <h3>3. Full forge (CLI smoke test)</h3>
+    <pre>aityuahn forge "A tiny hello-world CLI that prints the current time"
+aityuahn list
+aityuahn backlog my-project</pre>
+    <p>Requires a working AI provider in <code>forge.yaml</code> + <code>.env</code>.</p>
+
+    <h2 id="test-dev">Test AityUahn itself (developers)</h2>
+    <pre>pip install -e ".[dev]"
+pytest -q
+ruff check python tests</pre>
+
+    <h2 id="docker">Docker (optional)</h2>
+    <pre>cp config/forge.example.yaml config/forge.yaml
+docker compose --profile cli build
+docker compose --profile cli run --rm aityuahn list</pre>
+    <p>See the repository README for volume mounts and cloud deployment.</p>
 
     <h2>Controller views</h2>
     <ul>
@@ -40,7 +132,7 @@ aityuahn serve</pre>
       <li><strong>Agents</strong> — send prompts to configured providers</li>
     </ul>
 
-    <h2>CLI (same backend)</h2>
+    <h2>CLI reference (same backend)</h2>
     <pre>aityuahn forge "A tiny HTTP service for embeddings"
 aityuahn backlog my-project --generate
 aityuahn task my-project add "Add CI"
@@ -51,7 +143,27 @@ aityuahn test my-project</pre>
     <p>Edit <code>forge.yaml</code> for workspace path, AI providers (Claude, Cursor, Ollama, etc.), and role routing. API keys go in <code>.env</code> — never commit secrets.</p>
 
     <h2>Repository</h2>
-    <p><a href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a></p>
+    <p><a id="docsRepoFooter" href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a> · <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">README</a></p>
   </article>
+  <script>
+    (async () => {
+      try {
+        const cfg = await fetch(new URL("config.json", document.baseURI)).then((r) => r.ok ? r.json() : {});
+        const local = cfg.defaultApiLocal || "http://127.0.0.1:8765";
+        const set = (id, href) => { const el = document.getElementById(id); if (el && href) el.href = href; };
+        const text = (id, value) => { const el = document.getElementById(id); if (el && value) el.textContent = value; };
+        set("docsBackendZip", cfg.backendZip);
+        set("docsBackendRepo", cfg.backendRepo);
+        set("docsRepoFooter", cfg.backendRepo);
+        const clone = document.getElementById("docsCloneCmd");
+        if (clone && cfg.backendClone) clone.textContent = cfg.backendClone + "\ncd AityUahn";
+        text("docsDefaultApi", local);
+        text("docsLandingUrl", local + "/");
+        text("docsControllerUrl", local + "/controller.html");
+        text("docsHealthUrl", local + "/api/health");
+        text("docsOpenApiUrl", local + "/docs");
+      } catch { /* static fallbacks */ }
+    })();
+  </script>
 </body>
 </html>

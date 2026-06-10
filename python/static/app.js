@@ -81,6 +81,15 @@
     }
   }
 
+  function hasAuthIntent() {
+    const params = new URLSearchParams(location.search);
+    return Boolean(params.get("auth") || readPendingAuth());
+  }
+
+  function needsBackendBeforeUse() {
+    return hasAuthIntent() || Boolean(currentUser());
+  }
+
   function clearPendingAuth() {
     sessionStorage.removeItem(PENDING_AUTH_KEY);
   }
@@ -283,6 +292,40 @@
     }
   }
 
+  function applyBackendLinks(config) {
+    if (window.AitySetup) {
+      AitySetup.applyBackendLinks(config, AitySetup.IDS);
+      return;
+    }
+    const local = (config?.defaultApiLocal || "http://127.0.0.1:8765").replace(/\/$/, "");
+    const setHref = (id, href) => {
+      const el = document.getElementById(id);
+      if (el && href) el.href = href;
+    };
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el && value) el.textContent = value;
+    };
+    setHref("linkBackendZip", config?.backendZip);
+    setHref("linkBackendRepo", config?.backendRepo);
+    setHref("overlayBackendZip", config?.backendZip);
+    setHref("overlayBackendRepo", config?.backendRepo);
+    setText("overlayDefaultApi", local);
+    setText("overlayHealthUrl", `${local}/api/health`);
+  }
+
+  function refreshSetupOverlayContext() {
+    if (!window.AitySetup) return;
+    const pending = readPendingAuth();
+    const params = new URLSearchParams(location.search);
+    const authIntent = params.get("auth");
+    AitySetup.updateSetupContext({
+      pendingAuth: pending,
+      loggedIn: Boolean(currentUser()) && !pending && !authIntent,
+      authIntent,
+    });
+  }
+
   function readApiBase(config) {
     if (window.AityAuth) {
       return AityAuth.readApiBase();
@@ -309,7 +352,9 @@
     const labels = { live: "Live API", static: "Offline demo", offline: "Not connected", loading: "Connecting…" };
     pill.textContent = `${labels[next] || next}${detail ? " · " + detail : ""}`;
     pill.className = `status-pill ${next}`;
-    document.getElementById("blockedOverlay").classList.toggle("hidden", next === "live" || next === "static");
+    const hideOverlay = next === "live" || (next === "static" && !needsBackendBeforeUse());
+    document.getElementById("blockedOverlay").classList.toggle("hidden", hideOverlay);
+    if (!hideOverlay) refreshSetupOverlayContext();
   }
 
   function loadDemoOverrides() {
@@ -381,12 +426,18 @@
   async function resolveBackend(preferDemo = false) {
     if (window.AityAuth) await AityAuth.loadConfig();
     const config = await loadConfig();
+    applyBackendLinks(config);
+    refreshSetupOverlayContext();
     apiBase = readApiBase(config);
+    const localDefault = (config?.defaultApiLocal || "http://127.0.0.1:8765").replace(/\/$/, "");
     document.getElementById("apiBaseInput").value = apiBase;
     const overlayInput = document.getElementById("overlayApiInput");
-    if (overlayInput) overlayInput.value = apiBase || "http://127.0.0.1:8765";
+    if (overlayInput) overlayInput.value = apiBase || localDefault;
 
-    if (preferDemo || new URLSearchParams(location.search).get("demo") === "1") {
+    const authPending = hasAuthIntent();
+    const skipDemo = authPending || needsBackendBeforeUse();
+
+    if (preferDemo && !skipDemo) {
       await connectDemo();
       return;
     }
@@ -399,7 +450,7 @@
         toast(`API unreachable: ${e.message}`, true);
       }
     }
-    if (location.hostname.endsWith("github.io")) {
+    if (location.hostname.endsWith("github.io") || skipDemo) {
       setMode("offline");
       return;
     }
@@ -959,7 +1010,12 @@
     });
 
     updateAuthUI();
-    await resolveBackend(new URLSearchParams(location.search).get("demo") === "1");
+    const demoParam = new URLSearchParams(location.search).get("demo") === "1";
+    await resolveBackend(demoParam && !hasAuthIntent() && !currentUser());
+    if (mode === "offline" && hasAuthIntent()) {
+      refreshSetupOverlayContext();
+      document.getElementById("blockedOverlay")?.classList.remove("hidden");
+    }
     await loadProviders();
     const billing = await loadBillingSettings();
     if (billing?.team_price_ton) setUpgradeButtonLabel(billing.team_price_ton);

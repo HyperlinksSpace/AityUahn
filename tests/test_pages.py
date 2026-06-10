@@ -20,8 +20,13 @@ def test_build_pages(tmp_path: Path, monkeypatch):
     assert (docs / "controller.html").is_file()
     assert (docs / "docs.html").is_file()
     assert (docs / "auth.js").is_file()
+    assert (docs / "setup.js").is_file()
     assert (docs / "landing.js").is_file()
     assert (docs / "landing.css").is_file()
     index = (docs / "index.html").read_text(encoding="utf-8")
     assert "Try demo" in index
+    assert "Download backend" in index or "docs.html#backend" in index
+    docs_html = (docs / "docs.html").read_text(encoding="utf-8")
+    assert "Download the backend" in docs_html
+    assert "backendZip" in (docs / "config.json").read_text(encoding="utf-8")
     assert '<base href="/AityUahn/">' in index

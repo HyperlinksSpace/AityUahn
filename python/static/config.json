@@ -1,5 +1,9 @@
 {
   "pagesBase": "/AityUahn/",
   "defaultApi": "",
+  "defaultApiLocal": "http://127.0.0.1:8765",
+  "backendRepo": "https://github.com/HyperlinksSpace/AityUahn",
+  "backendZip": "https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip",
+  "backendClone": "git clone https://github.com/HyperlinksSpace/AityUahn.git",
   "hint": "Set defaultApi to your deployed aityuahn serve URL, or connect manually in the UI."
 }

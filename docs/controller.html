@@ -29,6 +29,11 @@
     <div style="flex:1;min-width:200px">
       <label for="apiBaseInput">API backend</label>
       <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
+      <p class="connect-hint muted">
+        <a id="linkBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend</a>
+        · <a id="linkBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn">GitHub</a>
+        · <a href="/AityUahn/docs.html#backend">Setup &amp; test guide</a>
+      </p>
     </div>
     <button type="button" id="btnConnect" class="primary">Connect</button>
     <button type="button" id="btnDemoMode">Offline demo</button>
@@ -36,25 +41,31 @@
   </div>
 
   <div id="blockedOverlay" class="blocked-overlay hidden">
-    <div class="blocked-card setup-card">
-      <h2 style="margin-top:0">First run — start your backend</h2>
-      <p class="muted">The controller UI can run on GitHub Pages, but forge, agents, and accounts need a local (or deployed) API.</p>
+    <div class="blocked-card setup-card setup-card-wide">
+      <h2 id="setupTitle" style="margin-top:0">First run — download &amp; start the backend</h2>
+      <p id="setupLead" class="muted">The controller UI can run on GitHub Pages, but forge, agents, and accounts need the Python API (<code>aityuahn serve</code>) on your machine or a deployed host.</p>
+      <div class="setup-actions">
+        <a id="overlayBackendZip" class="primary setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend (ZIP)</a>
+        <a id="overlayBackendRepo" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn">View on GitHub</a>
+        <a class="setup-btn" href="/AityUahn/docs.html#backend">Full setup guide</a>
+      </div>
+      <h3 class="setup-subhead">Install &amp; run</h3>
       <ol class="setup-steps">
-        <li>Open the AityUahn repo in a terminal</li>
-        <li><code>python -m venv .venv</code> then activate it</li>
-        <li><code>pip install -e ".[dev]"</code></li>
-        <li><code>cp config/forge.example.yaml forge.yaml</code> — edit workspace &amp; providers</li>
-        <li><code>cp .env.example .env</code> — add API keys (optional for sign-up)</li>
-        <li><code>aityuahn serve</code> — default API at <code>http://127.0.0.1:8765</code></li>
+        <li>Extract the ZIP or <code>git clone</code> the repo, then <code>cd AityUahn</code></li>
+        <li><code>python -m venv .venv</code> — activate: <code>source .venv/Scripts/activate</code> (Git Bash) or <code>.\.venv\Scripts\Activate.ps1</code> (PowerShell)</li>
+        <li><code>pip install -e ".[dev]"</code> — then <code>aityuahn init</code> to confirm the CLI</li>
+        <li><code>cp config/forge.example.yaml forge.yaml</code> and <code>cp .env.example .env</code> — set <code>workspace_root</code> and API keys (keys optional for sign-up only)</li>
+        <li><code>aityuahn serve</code> — API at <code id="overlayDefaultApi">http://127.0.0.1:8765</code> (try <code>aityuahn serve --demo</code> for sample data)</li>
+        <li>Verify: open <code id="overlayHealthUrl">http://127.0.0.1:8765/api/health</code> or run <code>curl http://127.0.0.1:8765/api/health</code></li>
       </ol>
-      <label for="overlayApiInput">Backend URL</label>
+      <label for="overlayApiInput">Backend URL (paste here after serve is running)</label>
       <input id="overlayApiInput" placeholder="http://127.0.0.1:8765" />
       <div class="row" style="margin-top:1rem">
         <button type="button" id="btnOverlayConnect" class="primary">Connect</button>
         <button type="button" id="btnOverlayDemo">Try offline demo</button>
         <button type="button" id="btnOverlaySignIn">Sign in / Register</button>
       </div>
-      <p class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account.</p>
+      <p id="setupNote" class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account. See <a href="/AityUahn/docs.html#test-ui">docs</a> for a full UI test checklist.</p>
     </div>
   </div>
 
@@ -215,6 +226,7 @@
 
   <div id="toast" class="toast"></div>
   <script src="/AityUahn/auth.js"></script>
+  <script src="/AityUahn/setup.js"></script>
   <script src="/AityUahn/app.js"></script>
 </body>
 </html>
