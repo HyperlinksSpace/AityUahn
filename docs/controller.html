@@ -30,9 +30,10 @@
       <label for="apiBaseInput">API backend</label>
       <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
       <p class="connect-hint muted">
-        <a id="linkBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend</a>
+        <a id="linkBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Windows .exe</a>
+        · <a id="linkBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">ZIP</a>
         · <a id="linkBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn">GitHub</a>
-        · <a href="/AityUahn/docs.html#backend">Setup &amp; test guide</a>
+        · <a href="/AityUahn/docs.html#install-one-line">One-line install</a>
       </p>
     </div>
     <button type="button" id="btnConnect" class="primary">Connect</button>
@@ -45,11 +46,27 @@
       <h2 id="setupTitle" style="margin-top:0">First run — download &amp; start the backend</h2>
       <p id="setupLead" class="muted">The controller UI can run on GitHub Pages, but forge, agents, and accounts need the Python API (<code>aityuahn serve</code>) on your machine or a deployed host.</p>
       <div class="setup-actions">
-        <a id="overlayBackendZip" class="primary setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend (ZIP)</a>
+        <a id="overlayBackendExe" class="primary setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Download Windows installer (.exe)</a>
+        <a id="overlayBackendZip" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download ZIP</a>
         <a id="overlayBackendRepo" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn">View on GitHub</a>
+        <a id="overlayBackendRelease" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest">All releases</a>
         <a class="setup-btn" href="/AityUahn/docs.html#backend">Full setup guide</a>
       </div>
-      <h3 class="setup-subhead">Install &amp; run</h3>
+      <h3 class="setup-subhead">One-line install (recommended)</h3>
+      <div class="install-cmd">
+        <label>Windows — PowerShell</label>
+        <div class="install-cmd-row">
+          <code id="installCmdPs1" class="install-cmd-text">irm https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1 | iex</code>
+          <button type="button" class="setup-btn" data-copy-target="installCmdPs1">Copy</button>
+        </div>
+        <label>Git Bash / WSL / macOS</label>
+        <div class="install-cmd-row">
+          <code id="installCmdSh" class="install-cmd-text">curl -LsSf https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh | sh</code>
+          <button type="button" class="setup-btn" data-copy-target="installCmdSh">Copy</button>
+        </div>
+        <p class="muted install-cmd-note">Installs to <code>%USERPROFILE%\AityUahn</code> on Windows. Then run <code>serve.bat</code> or <code>aityuahn serve</code>.</p>
+      </div>
+      <h3 class="setup-subhead">Manual install</h3>
       <ol class="setup-steps">
         <li>Extract the ZIP or <code>git clone</code> the repo, then <code>cd AityUahn</code></li>
         <li><code>python -m venv .venv</code> — activate: <code>source .venv/Scripts/activate</code> (Git Bash) or <code>.\.venv\Scripts\Activate.ps1</code> (PowerShell)</li>

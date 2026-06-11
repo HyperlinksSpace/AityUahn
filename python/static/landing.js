@@ -10,23 +10,35 @@
   const LP_IDS = {
     zip: "lpSetupBackendZip",
     repo: "lpSetupBackendRepo",
+    exe: "lpSetupBackendExe",
+    release: "lpSetupBackendRelease",
     defaultApi: "lpSetupDefaultApi",
     healthUrl: "lpSetupHealthUrl",
     apiInput: "lpSetupApiInput",
     title: "lpSetupTitle",
     lead: "lpSetupLead",
     note: "lpSetupNote",
+    cmdPs1: "lpInstallCmdPs1",
+    cmdSh: "lpInstallCmdSh",
   };
   let mode = "login";
   let pendingAfterConnect = null;
   let setupConfig = null;
 
   async function initSetup() {
-    setupConfig = await AitySetup.loadConfig();
-    const local = AitySetup.applyBackendLinks(setupConfig, LP_IDS);
+    setupConfig = await AitySetup.initSetupUi(LP_IDS, (msg) => {
+      const note = document.getElementById("lpSetupNote");
+      if (note) {
+        const prev = note.textContent;
+        note.textContent = msg;
+        setTimeout(() => {
+          if (note.textContent === msg) note.textContent = prev;
+        }, 2500);
+      }
+    });
     const input = document.getElementById("lpSetupApiInput");
     const stored = AityAuth.readApiBase();
-    if (input) input.value = stored || local;
+    if (input) input.value = stored || AitySetup.localDefault(setupConfig);
   }
 
   function needsBackendSetup() {

@@ -5,5 +5,9 @@
   "backendRepo": "https://github.com/HyperlinksSpace/AityUahn",
   "backendZip": "https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip",
   "backendClone": "git clone https://github.com/HyperlinksSpace/AityUahn.git",
+  "backendRelease": "https://github.com/HyperlinksSpace/AityUahn/releases/latest",
+  "backendExe": "https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe",
+  "backendInstallerSh": "https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh",
+  "backendInstallerPs1": "https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1",
   "hint": "Set defaultApi to your deployed aityuahn serve URL, or connect manually in the UI."
 }

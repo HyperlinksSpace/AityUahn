@@ -26,9 +26,25 @@
     <h2 id="backend">Download the backend</h2>
     <p>Get the full repository (CLI + FastAPI server + static UI):</p>
     <ul class="docs-actions">
-      <li><a id="docsBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip" class="docs-btn">Download ZIP (main branch)</a></li>
-      <li><a id="docsBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn" class="docs-btn ghost">View on GitHub</a></li>
+      <li><a id="docsBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe" class="docs-btn">Windows installer (.exe)</a></li>
+      <li><a id="docsBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip" class="docs-btn ghost">Download ZIP</a></li>
+      <li><a id="docsBackendRelease" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest" class="docs-btn ghost">GitHub releases</a></li>
+      <li><a id="docsBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn" class="docs-btn ghost">Repository</a></li>
     </ul>
+
+    <h2 id="install-one-line">One-line install</h2>
+    <p>Same pattern as other tools — paste in a terminal. Works on Windows via PowerShell; Git Bash uses the shell script.</p>
+    <p><strong>Windows (PowerShell)</strong> — run as your user (not necessarily admin):</p>
+    <pre id="docsInstallPs1">irm https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1 | iex</pre>
+    <p><strong>Git Bash / WSL / macOS / Linux</strong>:</p>
+    <pre id="docsInstallSh">curl -LsSf https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh | sh</pre>
+    <p>Default install folder: <code>%USERPROFILE%\AityUahn</code> on Windows, <code>~/AityUahn</code> elsewhere. Override with <code>AITYUAHN_INSTALL_DIR</code> (env var).</p>
+    <p>After install, start the API:</p>
+    <pre>cd %USERPROFILE%\AityUahn
+serve.bat
+# or:  aityuahn serve</pre>
+    <p>Upload your own <code>aityuahn-installer.exe</code> to <a id="docsReleaseLink" href="https://github.com/HyperlinksSpace/AityUahn/releases">GitHub Releases</a> — the UI download button uses <code>releases/latest/download/aityuahn-installer.exe</code>.</p>
+
     <p>Or clone with Git:</p>
     <pre id="docsCloneCmd">git clone https://github.com/HyperlinksSpace/AityUahn.git
 cd AityUahn</pre>
@@ -145,6 +161,7 @@ aityuahn test my-project</pre>
     <h2>Repository</h2>
     <p><a id="docsRepoFooter" href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a> · <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">README</a></p>
   </article>
+  <script src="/static/setup.js"></script>
   <script>
     (async () => {
       try {
@@ -153,8 +170,14 @@ aityuahn test my-project</pre>
         const set = (id, href) => { const el = document.getElementById(id); if (el && href) el.href = href; };
         const text = (id, value) => { const el = document.getElementById(id); if (el && value) el.textContent = value; };
         set("docsBackendZip", cfg.backendZip);
+        set("docsBackendExe", cfg.backendExe);
+        set("docsBackendRelease", cfg.backendRelease);
         set("docsBackendRepo", cfg.backendRepo);
         set("docsRepoFooter", cfg.backendRepo);
+        set("docsReleaseLink", cfg.backendRelease || cfg.backendRepo + "/releases");
+        const lines = window.AitySetup?.installOneLiners(cfg) || {};
+        text("docsInstallPs1", lines.powershell);
+        text("docsInstallSh", lines.gitBash);
         const clone = document.getElementById("docsCloneCmd");
         if (clone && cfg.backendClone) clone.textContent = cfg.backendClone + "\ncd AityUahn";
         text("docsDefaultApi", local);

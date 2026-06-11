@@ -424,6 +424,31 @@ code {
   color: var(--text);
   font: inherit;
 }
+.install-cmd { margin: 0.5rem 0 1rem; }
+.install-cmd label {
+  display: block;
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.install-cmd-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+.install-cmd-text {
+  flex: 1;
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  padding: 0.45rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.install-cmd-row .lp-btn { flex-shrink: 0; padding: 0.35rem 0.65rem; font-size: 0.82rem; }
 
 @media (max-width: 720px) {
   .lp-nav-toggle { display: inline-flex; margin-left: auto; }

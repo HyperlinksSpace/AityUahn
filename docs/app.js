@@ -1010,6 +1010,7 @@
     });
 
     updateAuthUI();
+    await AitySetup.initSetupUi(AitySetup.IDS, (msg, err) => toast(msg, err));
     const demoParam = new URLSearchParams(location.search).get("demo") === "1";
     await resolveBackend(demoParam && !hasAuthIntent() && !currentUser());
     if (mode === "offline" && hasAuthIntent()) {

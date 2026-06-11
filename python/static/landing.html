@@ -323,11 +323,27 @@
       <h2 id="lpSetupTitle">Connect backend to sign in</h2>
       <p id="lpSetupLead" class="muted">Sign-in and registration run on aityuahn serve — not on GitHub Pages. Download the backend, run it locally (or deploy it), then paste the API URL below.</p>
       <div class="lp-setup-actions">
-        <a id="lpSetupBackendZip" class="lp-btn primary" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download backend (ZIP)</a>
+        <a id="lpSetupBackendExe" class="lp-btn primary" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Download Windows installer (.exe)</a>
+        <a id="lpSetupBackendZip" class="lp-btn" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download ZIP</a>
         <a id="lpSetupBackendRepo" class="lp-btn" href="https://github.com/HyperlinksSpace/AityUahn">View on GitHub</a>
+        <a id="lpSetupBackendRelease" class="lp-btn ghost" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest">All releases</a>
         <a class="lp-btn ghost" href="docs.html#backend">Full setup guide</a>
       </div>
-      <h3 class="lp-setup-subhead">Install &amp; run</h3>
+      <h3 class="lp-setup-subhead">One-line install (recommended)</h3>
+      <div class="install-cmd">
+        <label>Windows — PowerShell</label>
+        <div class="install-cmd-row">
+          <code id="lpInstallCmdPs1" class="install-cmd-text">irm https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1 | iex</code>
+          <button type="button" class="lp-btn ghost" data-copy-target="lpInstallCmdPs1">Copy</button>
+        </div>
+        <label>Git Bash / WSL / macOS</label>
+        <div class="install-cmd-row">
+          <code id="lpInstallCmdSh" class="install-cmd-text">curl -LsSf https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh | sh</code>
+          <button type="button" class="lp-btn ghost" data-copy-target="lpInstallCmdSh">Copy</button>
+        </div>
+        <p class="lp-hint">Installs to <code>%USERPROFILE%\AityUahn</code>. Then run <code>serve.bat</code> or <code>aityuahn serve</code>.</p>
+      </div>
+      <h3 class="lp-setup-subhead">Manual steps</h3>
       <ol class="lp-setup-steps">
         <li>Extract the ZIP or <code>git clone</code> the repo, then <code>cd AityUahn</code></li>
         <li><code>python -m venv .venv</code> — activate: <code>source .venv/Scripts/activate</code> (Git Bash) or <code>.\.venv\Scripts\Activate.ps1</code> (PowerShell)</li>

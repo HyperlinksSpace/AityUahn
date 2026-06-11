@@ -352,6 +352,33 @@ a.setup-btn.primary {
   border-radius: 4px;
 }
 .setup-note { font-size: 0.82rem; margin: 0.75rem 0 0; }
+.install-cmd { margin: 0.5rem 0 1rem; }
+.install-cmd label {
+  display: block;
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.install-cmd-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+.install-cmd-text {
+  flex: 1;
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  padding: 0.45rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.install-cmd-note { font-size: 0.78rem; margin: 0.5rem 0 0; }
+.install-cmd-row .setup-btn { flex-shrink: 0; align-self: stretch; }
 #authDialog label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.85rem; color: var(--muted); }
 #authDialog input, #authDialog select { width: 100%; }
 #btnSignIn { margin: 0; font-size: 0.85rem; }
