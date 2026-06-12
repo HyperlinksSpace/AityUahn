@@ -90,8 +90,13 @@ function Install-Venv([hashtable]$Py) {
     $pip = Join-Path $venv "Scripts\python.exe"
     & $pip -m pip install -U pip wheel
     if ($LASTEXITCODE -ne 0) { throw "pip upgrade failed" }
-    & $pip -m pip install -e "$InstallDir/.[dev]"
-    if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+    Push-Location $InstallDir
+    try {
+        & $pip -m pip install -e ".[dev]"
+        if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+    } finally {
+        Pop-Location
+    }
 }
 
 function Write-ConfigFiles {

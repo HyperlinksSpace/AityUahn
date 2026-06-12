@@ -8,9 +8,12 @@ from python.forge import LForge
 from tests.test_api import _test_forge
 
 
-def test_register_login_and_project(tmp_path: Path):
+def test_register_login_and_project(tmp_path: Path, monkeypatch):
+    from python.saas import ton as ton_mod
+
+    monkeypatch.setattr(ton_mod, "wallet_configured", lambda: False)
     forge = _test_forge(tmp_path)
-    client = TestClient(create_app(forge))
+    client = TestClient(create_app(forge, include_saas=True))
 
     r = client.post(
         "/api/saas/auth/register",
@@ -53,7 +56,7 @@ def test_register_login_and_project(tmp_path: Path):
 
 def test_personal_plan_project_limit(tmp_path: Path):
     forge = _test_forge(tmp_path)
-    client = TestClient(create_app(forge))
+    client = TestClient(create_app(forge, include_saas=True))
     r = client.post(
         "/api/saas/auth/register",
         json={"email": "solo@home.com", "password": "secret12", "plan": "personal"},
@@ -66,7 +69,7 @@ def test_personal_plan_project_limit(tmp_path: Path):
 
 def test_pricing_public(tmp_path: Path):
     forge = _test_forge(tmp_path)
-    client = TestClient(create_app(forge))
+    client = TestClient(create_app(forge, include_saas=True))
     r = client.get("/api/saas/pricing")
     assert r.status_code == 200
     plans = r.json()

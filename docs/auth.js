@@ -1,6 +1,8 @@
 (() => {
   const TOKEN_KEY = "aityuahn-token";
   const USER_KEY = "aityuahn-user";
+  const STORAGE_FORGE = "aityuahn-forge-api";
+  const STORAGE_SAAS = "aityuahn-saas-api";
   const STORAGE_API = "aityuahn-api-base";
 
   let cachedConfig = null;
@@ -42,35 +44,71 @@
     return location.hostname === "127.0.0.1" || location.hostname === "localhost";
   }
 
-  function readApiBase() {
+  function readForgeBase() {
     const params = new URLSearchParams(location.search);
-    const fromQuery = params.get("api");
+    const fromQuery = params.get("api") || params.get("forge");
     if (fromQuery) {
       const v = fromQuery.replace(/\/$/, "");
-      localStorage.setItem(STORAGE_API, v);
+      localStorage.setItem(STORAGE_FORGE, v);
       return v;
     }
-    const stored = localStorage.getItem(STORAGE_API);
+    const stored = localStorage.getItem(STORAGE_FORGE) || localStorage.getItem(STORAGE_API);
     if (stored) return stored.replace(/\/$/, "");
+    if (cachedConfig?.defaultForgeApi) return String(cachedConfig.defaultForgeApi).replace(/\/$/, "");
     if (cachedConfig?.defaultApi) return String(cachedConfig.defaultApi).replace(/\/$/, "");
+    if (cachedConfig?.defaultApiLocal) return String(cachedConfig.defaultApiLocal).replace(/\/$/, "");
     if (isLocalHost()) return location.origin.replace(/\/$/, "");
     return "";
   }
 
-  function setApiBase(url) {
+  function readSaasBase() {
+    const params = new URLSearchParams(location.search);
+    const fromQuery = params.get("saas");
+    if (fromQuery) {
+      const v = fromQuery.replace(/\/$/, "");
+      localStorage.setItem(STORAGE_SAAS, v);
+      return v;
+    }
+    const stored = localStorage.getItem(STORAGE_SAAS);
+    if (stored) return stored.replace(/\/$/, "");
+    if (cachedConfig?.defaultSaasApi) return String(cachedConfig.defaultSaasApi).replace(/\/$/, "");
+    return readForgeBase();
+  }
+
+  function readApiBase() {
+    return readForgeBase();
+  }
+
+  function setForgeBase(url) {
     const v = url.trim().replace(/\/$/, "");
-    if (v) localStorage.setItem(STORAGE_API, v);
-    else localStorage.removeItem(STORAGE_API);
+    if (v) {
+      localStorage.setItem(STORAGE_FORGE, v);
+      localStorage.setItem(STORAGE_API, v);
+    } else {
+      localStorage.removeItem(STORAGE_FORGE);
+      localStorage.removeItem(STORAGE_API);
+    }
+    return v;
+  }
+
+  function setApiBase(url) {
+    return setForgeBase(url);
+  }
+
+  function setSaasBase(url) {
+    const v = url.trim().replace(/\/$/, "");
+    if (v) localStorage.setItem(STORAGE_SAAS, v);
+    else localStorage.removeItem(STORAGE_SAAS);
     return v;
   }
 
   function parseError(body, status) {
     if (typeof body === "string") {
       if (body.includes("405") || body.includes("Not Allowed")) {
-        return "This site is UI-only on GitHub Pages. Enter your aityuahn serve URL (e.g. http://127.0.0.1:8765).";
+        return "This site is UI-only on GitHub Pages. Run aityuahn serve locally and connect the forge API.";
       }
       if (body.trim().startsWith("<")) {
-        return `API error (${status}). Check the backend URL — registration runs on aityuahn serve, not GitHub Pages.`;
+        return `API error (${status}). Check forge vs cloud SaaS URLs in config.`;
       }
       return body.slice(0, 240);
     }
@@ -85,10 +123,10 @@
 
   async function saasApi(path, opts = {}) {
     await loadConfig();
-    const base = readApiBase();
+    const base = readSaasBase();
     if (!base) {
       throw new Error(
-        "Set the API backend URL (run: aityuahn serve → http://127.0.0.1:8765). GitHub Pages hosts the UI only."
+        "Set defaultSaasApi in config (your Vercel URL) or run aityuahn serve --with-saas locally."
       );
     }
     const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
@@ -112,7 +150,11 @@
     getUser,
     clearSession,
     loadConfig,
+    readForgeBase,
+    readSaasBase,
     readApiBase,
+    setForgeBase,
+    setSaasBase,
     setApiBase,
     probeApi,
     saasApi,

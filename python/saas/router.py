@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from python.forge import LForge
 from python.saas.models import AuthToken, MemberRole, Plan
-from python.saas.store import SaaSStore
+from python.saas.store import SaaSStore, create_saas_store, resolve_saas_data_dir
 from python.saas.ton import TonPaymentService, wallet_configured
 from python.saas.settings import team_price_ton
 
@@ -41,7 +41,7 @@ class ApiConfigRequest(BaseModel):
 
 
 def create_saas_router(forge: LForge) -> APIRouter:
-    store = SaaSStore(forge.config.forge_data_dir / "saas")
+    store = create_saas_store(forge.config.forge_data_dir)
     ton = TonPaymentService(store)
     router = APIRouter(prefix="/api/saas", tags=["saas"])
 

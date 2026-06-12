@@ -214,9 +214,14 @@ def prompt_cmd(ctx: click.Context, text: str, provider: str | None, system: str 
 @click.option("--host", default="127.0.0.1", help="Bind host.")
 @click.option("--port", default=8765, type=int, help="Bind port.")
 @click.option("--demo", is_flag=True, help="Seed sample dashboard data when forge data is empty.")
+@click.option(
+    "--with-saas",
+    is_flag=True,
+    help="Also run SaaS API on this port (dev monolith). Production SaaS is deployed separately.",
+)
 @click.pass_context
-def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool) -> None:
-    """Run HTTP API + test UI (backend for .python data)."""
+def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: bool) -> None:
+    """Run local forge API + UI (ideas, backlog, scaffold, agents)."""
     import uvicorn
 
     from python.backend.app import create_app
@@ -227,10 +232,32 @@ def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool) -> None:
         slug = seed_demo_data(forge.storage)
         if demo or slug:
             console.print(f"[dim]Demo data[/dim]     {slug} (see dashboard)")
-    app = create_app(forge)
-    console.print(f"[green]AityUahn UI[/green]  http://{host}:{port}/")
-    console.print(f"[dim]API docs[/dim]     http://{host}:{port}/docs")
+    app = create_app(forge, include_saas=with_saas)
+    console.print(f"[green]Forge UI[/green]    http://{host}:{port}/")
+    console.print(f"[dim]Forge API[/dim]    http://{host}:{port}/api/health")
+    if with_saas:
+        console.print(f"[dim]SaaS API[/dim]     http://{host}:{port}/api/saas/pricing")
+    else:
+        console.print("[dim]SaaS[/dim]         off — set defaultSaasApi in UI config for cloud auth")
     console.print(f"[dim]forge data[/dim]  {forge.config.forge_data_dir}")
+    uvicorn.run(app, host=host, port=port, log_level="info")
+
+
+@main.command("serve-saas")
+@click.option("--host", default="127.0.0.1", help="Bind host.")
+@click.option("--port", default=8780, type=int, help="Bind port.")
+@click.pass_context
+def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
+    """Run cloud SaaS API only (auth, teams, billing) — for Vercel/Neon dev."""
+    import uvicorn
+
+    from python.backend.saas_app import create_saas_app
+
+    forge: LForge = ctx.obj["forge"]
+    app = create_saas_app(forge)
+    console.print(f"[green]SaaS API[/green]     http://{host}:{port}/api/saas/pricing")
+    console.print(f"[dim]health[/dim]       http://{host}:{port}/api/health")
+    console.print("[dim]store[/dim]        JSON files until Neon is wired")
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 

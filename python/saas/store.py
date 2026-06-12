@@ -27,6 +27,14 @@ JWT_ALG = "HS256"
 JWT_TTL_HOURS = 72
 
 
+def resolve_saas_data_dir(forge_data_dir: Path) -> Path:
+    """SaaS persistence root. Override with AITYUAHN_SAAS_DATA_DIR (e.g. /tmp on Vercel)."""
+    env = os.environ.get("AITYUAHN_SAAS_DATA_DIR", "").strip()
+    if env:
+        return Path(env)
+    return forge_data_dir / "saas"
+
+
 def _hash_password(password: str, salt: str | None = None) -> str:
     salt = salt or secrets.token_hex(16)
     digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 120_000)
@@ -36,6 +44,16 @@ def _hash_password(password: str, salt: str | None = None) -> str:
 def verify_password(password: str, stored: str) -> bool:
     salt, _hex = stored.split("$", 1)
     return _hash_password(password, salt) == stored
+
+
+def create_saas_store(forge_data_dir: Path) -> SaaSStore:
+    """JSON files locally; Neon Postgres when DATABASE_URL is set (Vercel production)."""
+    dsn = os.environ.get("DATABASE_URL", "").strip()
+    if dsn:
+        from python.saas.postgres_store import PostgresSaaSStore
+
+        return PostgresSaaSStore(dsn)
+    return SaaSStore(resolve_saas_data_dir(forge_data_dir))
 
 
 def jwt_secret() -> str:

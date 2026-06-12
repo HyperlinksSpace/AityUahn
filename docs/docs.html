@@ -24,14 +24,20 @@
     <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="/AityUahn/controller.html">Controller</a> for kanban, tasks, forge, and agents.</p>
     <p>The web UI can run on GitHub Pages, but <strong>forge, agents, sign-in, and team billing require the Python backend</strong> (<code>aityuahn serve</code>). Follow the steps below to download it, run it, and verify everything works.</p>
 
-    <h2 id="backend">Download the backend</h2>
-    <p>Get the full repository (CLI + FastAPI server + static UI):</p>
+    <h2 id="backend">Download the local forge (Windows)</h2>
+    <p>The <strong>local forge</strong> runs on your PC (<code>aityuahn serve</code>). Cloud sign-in/billing is separate on Vercel — see the <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">Vercel deploy guide</a>.</p>
     <ul class="docs-actions">
-      <li><a id="docsBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe" class="docs-btn">Windows installer (.exe)</a></li>
+      <li><a id="docsBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe" class="docs-btn">Download installer (.exe)</a></li>
+      <li><a id="docsBackendRelease" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest" class="docs-btn ghost">All releases</a></li>
       <li><a id="docsBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip" class="docs-btn ghost">Download ZIP</a></li>
-      <li><a id="docsBackendRelease" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest" class="docs-btn ghost">GitHub releases</a></li>
       <li><a id="docsBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn" class="docs-btn ghost">Repository</a></li>
     </ul>
+    <p><strong>Stable download URL</strong> (always points at the newest build):</p>
+    <pre id="docsExeLatestUrl">https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe</pre>
+    <p><strong>Releases page</strong> (version history, build notes):</p>
+    <pre id="docsReleasePageUrl">https://github.com/HyperlinksSpace/AityUahn/releases</pre>
+    <p>Every push to <code>main</code> that touches the forge code triggers <code>.github/workflows/release-installer.yml</code>, which builds <code>aityuahn-installer.exe</code> on GitHub Actions and publishes a new GitHub Release (same pattern as HyperlinksSpaceProgram).</p>
+    <p>The installer requires <strong>Python 3.11+</strong> already installed on Windows. It clones the repo to <code>%USERPROFILE%\AityUahn</code>, creates a venv, and adds <code>serve.bat</code>.</p>
 
     <h2 id="install-one-line">One-line install</h2>
     <p>Same pattern as other tools — paste in a terminal. Works on Windows via PowerShell; Git Bash uses the shell script.</p>
@@ -44,7 +50,7 @@
     <pre>cd %USERPROFILE%\AityUahn
 serve.bat
 # or:  aityuahn serve</pre>
-    <p>Upload your own <code>aityuahn-installer.exe</code> to <a id="docsReleaseLink" href="https://github.com/HyperlinksSpace/AityUahn/releases">GitHub Releases</a> — the UI download button uses <code>releases/latest/download/aityuahn-installer.exe</code>.</p>
+    <p>Manual release build (maintainers): <code>pip install -e ".[installer]"</code> then <code>python scripts/build_installer.py</code> → <code>dist/aityuahn-installer.exe</code>.</p>
 
     <p>Or clone with Git:</p>
     <pre id="docsCloneCmd">git clone https://github.com/HyperlinksSpace/AityUahn.git
@@ -176,6 +182,8 @@ aityuahn test my-project</pre>
         set("docsBackendRepo", cfg.backendRepo);
         set("docsRepoFooter", cfg.backendRepo);
         set("docsReleaseLink", cfg.backendRelease || cfg.backendRepo + "/releases");
+        text("docsExeLatestUrl", cfg.backendExe);
+        text("docsReleasePageUrl", (cfg.backendRepo || "https://github.com/HyperlinksSpace/AityUahn") + "/releases");
         const lines = window.AitySetup?.installOneLiners(cfg) || {};
         text("docsInstallPs1", lines.powershell);
         text("docsInstallSh", lines.gitBash);

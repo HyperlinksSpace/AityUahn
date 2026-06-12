@@ -26,8 +26,9 @@
 
   <div class="connect-bar">
     <div style="flex:1;min-width:200px">
-      <label for="apiBaseInput">API backend</label>
+      <label for="apiBaseInput">Local forge API</label>
       <input id="apiBaseInput" placeholder="http://127.0.0.1:8765" />
+      <p class="connect-hint muted">Cloud sign-in uses <code>defaultSaasApi</code> from config when set; forge work stays on this URL.</p>
       <p class="connect-hint muted">
         <a id="linkBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Windows .exe</a>
         · <a id="linkBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">ZIP</a>

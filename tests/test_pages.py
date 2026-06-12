@@ -27,12 +27,14 @@ def test_build_pages(tmp_path: Path, monkeypatch):
     assert "Try demo" in index
     assert "Download backend" in index or "docs.html#backend" in index
     docs_html = (docs / "docs.html").read_text(encoding="utf-8")
-    assert "Download the backend" in docs_html
+    assert "Download the local forge" in docs_html
     assert "install-one-line" in docs_html
+    assert "releases/latest/download/aityuahn-installer.exe" in docs_html
     config_text = (docs / "config.json").read_text(encoding="utf-8")
     assert "backendZip" in config_text
     assert "backendInstallerPs1" in config_text
     root = Path(build_pages.ROOT)
     assert (root / "scripts" / "install.ps1").is_file()
-    assert (root / "scripts" / "install.sh").is_file()
+    assert (root / "scripts" / "build_installer.py").is_file()
+    assert (root / ".github" / "workflows" / "release-installer.yml").is_file()
     assert '<base href="/AityUahn/">' in index

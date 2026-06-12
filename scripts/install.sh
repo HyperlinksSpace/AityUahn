@@ -79,7 +79,8 @@ setup_venv() {
   # shellcheck disable=SC1091
   . "$INSTALL_DIR/.venv/bin/activate" 2>/dev/null || . "$INSTALL_DIR/.venv/Scripts/activate"
   python -m pip install -U pip wheel
-  pip install -e "$INSTALL_DIR/.[dev]"
+  # Must run from project root — "$INSTALL_DIR/.[dev]" breaks pip on Windows/Git Bash
+  (cd "$INSTALL_DIR" && pip install -e ".[dev]")
 }
 
 write_config() {

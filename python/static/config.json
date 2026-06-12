@@ -1,5 +1,7 @@
 {
   "pagesBase": "/AityUahn/",
+  "defaultForgeApi": "http://127.0.0.1:8765",
+  "defaultSaasApi": "",
   "defaultApi": "",
   "defaultApiLocal": "http://127.0.0.1:8765",
   "backendRepo": "https://github.com/HyperlinksSpace/AityUahn",
@@ -9,5 +11,5 @@
   "backendExe": "https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe",
   "backendInstallerSh": "https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh",
   "backendInstallerPs1": "https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1",
-  "hint": "Set defaultApi to your deployed aityuahn serve URL, or connect manually in the UI."
+  "hint": "defaultForgeApi = local utility (aityuahn serve). defaultSaasApi = your Vercel cloud API for sign-in and billing."
 }
