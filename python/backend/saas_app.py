@@ -10,6 +10,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from python.forge import LForge
+from python.saas.health import app_version, saas_health
 from python.saas.router import create_saas_router
 
 
@@ -25,7 +26,7 @@ def create_saas_app(forge: LForge | None = None) -> FastAPI:
             ton_service.start_background_poll()
         yield
 
-    app = FastAPI(title="AityUahn Cloud", version="0.2.0", lifespan=lifespan)
+    app = FastAPI(title="AityUahn Cloud", version=app_version(), lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -36,8 +37,7 @@ def create_saas_app(forge: LForge | None = None) -> FastAPI:
 
     @app.get("/api/health")
     def health() -> dict[str, Any]:
-        storage = "neon" if os.environ.get("DATABASE_URL", "").strip() else "json"
-        return {"ok": True, "role": "saas", "serverless": serverless, "storage": storage}
+        return saas_health(serverless=serverless)
 
     @app.get("/api/cron/ton-poll")
     async def cron_ton_poll(authorization: str | None = Header(default=None)) -> dict[str, Any]:

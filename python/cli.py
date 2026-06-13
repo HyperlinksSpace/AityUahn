@@ -261,6 +261,77 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("doctor")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def doctor_cmd(forge_url: str, saas_url: str | None, json_out: bool) -> None:
+    """Check local forge and optional cloud SaaS readiness."""
+    import httpx
+
+    forge_url = forge_url.rstrip("/")
+    report: dict[str, object] = {"forge_url": forge_url, "checks": []}
+    failed = 0
+
+    def add(name: str, ok: bool, detail: str, payload: dict | None = None) -> None:
+        nonlocal failed
+        if not ok:
+            failed += 1
+        entry: dict[str, object] = {"name": name, "ok": ok, "detail": detail}
+        if payload:
+            entry["data"] = payload
+        report["checks"].append(entry)
+
+    try:
+        with httpx.Client(timeout=8.0) as client:
+            r = client.get(f"{forge_url}/api/health", headers={"Accept": "application/json"})
+            if r.status_code == 200:
+                body = r.json()
+                ok = body.get("ok") is True and body.get("role") == "forge"
+                add("forge", ok, f"{forge_url}/api/health", body)
+            else:
+                add("forge", False, f"HTTP {r.status_code} from {forge_url}/api/health")
+
+            if saas_url:
+                saas_url = saas_url.rstrip("/")
+                report["saas_url"] = saas_url
+                r = client.get(f"{saas_url}/api/health", headers={"Accept": "application/json"})
+                if r.status_code == 200:
+                    body = r.json()
+                    ok = body.get("ok") is True and body.get("role") == "saas"
+                    issues = body.get("issues") or []
+                    detail = saas_url + "/api/health"
+                    if issues:
+                        detail += " — " + "; ".join(str(i) for i in issues)
+                    add("saas", ok, detail, body)
+                else:
+                    add("saas", False, f"HTTP {r.status_code} from {saas_url}/api/health")
+    except httpx.HTTPError as exc:
+        add("forge", False, f"Could not reach forge: {exc}")
+
+    report["ok"] = failed == 0
+    if json_out:
+        console.print_json(json.dumps(report, default=str))
+    else:
+        table = Table(title="AityUahn doctor")
+        table.add_column("Check")
+        table.add_column("Status")
+        table.add_column("Detail")
+        for check in report["checks"]:
+            table.add_row(
+                str(check["name"]),
+                "[green]ok[/green]" if check["ok"] else "[red]fail[/red]",
+                str(check["detail"]),
+            )
+        console.print(table)
+        if report["ok"]:
+            console.print("[green]All checks passed[/green]")
+        else:
+            console.print(f"[red]{failed} check(s) failed[/red]")
+    if not report["ok"]:
+        raise SystemExit(1)
+
+
 @main.command("providers")
 @click.pass_context
 def providers_cmd(ctx: click.Context) -> None:

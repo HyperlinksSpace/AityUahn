@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from python.forge import LForge
 from python.models import TaskStatus
+from python.saas.health import app_version
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -73,6 +74,7 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
         return {
             "ok": True,
             "role": "forge",
+            "version": app_version(),
             "workspace": str(engine.config.workspace_root),
             "forge_data": str(engine.config.forge_data_dir),
             "default_provider": engine.config.default_provider,

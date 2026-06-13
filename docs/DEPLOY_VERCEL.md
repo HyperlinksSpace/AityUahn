@@ -120,11 +120,13 @@ vercel env pull .env.local
 
 ## Part 4 — Deploy
 
+**Recommended:** use Vercel’s **GitHub integration** (Part 2, Option A). Pushes to `main` deploy automatically — no GitHub Actions secrets needed.
+
 ```bash
 vercel --prod
 ```
 
-Or push to `main` if GitHub integration is enabled.
+Or push to `main` after the project is linked on [vercel.com](https://vercel.com).
 
 **Build log should show:**
 
@@ -154,8 +156,10 @@ curl https://YOUR-APP.vercel.app/api/health
 Expected:
 
 ```json
-{"ok": true, "role": "saas", "serverless": true, "storage": "neon"}
+{"ok": true, "role": "saas", "version": "0.2.0", "serverless": true, "storage": "neon", "jwt_configured": true, "database_reachable": true}
 ```
+
+If `ok` is `false`, read the `issues` array — common causes: missing `DATABASE_URL`, missing/short `AITYUAHN_JWT_SECRET`, or Neon unreachable.
 
 ```bash
 curl https://YOUR-APP.vercel.app/api/saas/pricing
@@ -203,17 +207,30 @@ git push
 
 ## Part 7 — GitHub Actions deploy (optional)
 
-Like HyperlinksSpaceProgram `.github/workflows/vercel-deploy-test-envs.yml`.
+**You do not need this** if the repo is already imported on Vercel (Part 2). Vercel deploys on push by itself.
 
-Add GitHub repo secrets:
+Use `.github/workflows/vercel-deploy.yml` only when you want deploys driven by GitHub Actions instead of (or in addition to) the Vercel GitHub app.
+
+Add GitHub repo secrets (**Settings → Secrets and variables → Actions**):
 
 | Secret | From |
 |--------|------|
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens |
-| `VERCEL_ORG_ID` | `vercel whoami` / team settings |
-| `VERCEL_PROJECT_ID` | Project → Settings → General |
+| `VERCEL_TOKEN` | Vercel → [Account Settings → Tokens](https://vercel.com/account/tokens) → Create |
+| `VERCEL_ORG_ID` | Project → Settings → General → **Project ID** area, or run `vercel whoami` after `vercel link` |
+| `VERCEL_PROJECT_ID` | Same page — **Project ID** (starts with `prj_`) |
 
-Workflow: `.github/workflows/vercel-deploy.yml` (run manually or on push).
+To find org/project IDs after `vercel link`:
+
+```bash
+cat .vercel/project.json
+# { "orgId": "team_…", "projectId": "prj_…" }
+```
+
+Without these secrets, the workflow **fails** (red ✗) so a missing deploy is visible in Actions.
+
+Trigger: push to `main` (SaaS paths) or **Actions → Vercel Deploy (SaaS API) → Run workflow**.
+
+After deploy, CI calls `/api/health` on the production URL; a failed migrate, missing `DATABASE_URL`, or broken API also fails the workflow.
 
 ---
 
@@ -232,6 +249,7 @@ aityuahn serve-saas
 
 ```bash
 aityuahn serve --demo
+aityuahn doctor --saas-url http://127.0.0.1:8780
 ```
 
 **UI config:**
@@ -260,6 +278,8 @@ aityuahn serve --demo
 
 | Problem | Fix |
 |---------|-----|
+| GitHub Action fails `vercel-token` not supplied | Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` to GitHub Actions secrets |
+| Action green on Vercel but health check fails | Fix Vercel env (`DATABASE_URL`, `AITYUAHN_JWT_SECRET`); check build logs for migrate errors |
 | Build fails on migrate | Set `DATABASE_URL` in Vercel; use **pooled** Neon URL |
 | `storage: "json"` in health | `DATABASE_URL` not visible to function — redeploy after setting env |
 | Users disappear | You were on JSON `/tmp` before — ensure `storage: "neon"` |

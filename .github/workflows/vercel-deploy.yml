@@ -1,3 +1,4 @@
+# Deploy SaaS API to Vercel via GitHub Actions. Fails (red ✗) if secrets are missing, deploy errors, or health check fails.
 name: Vercel Deploy (SaaS API)
 
 on:
@@ -17,9 +18,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Require Vercel GitHub secrets
+        env:
+          HAS_TOKEN: ${{ secrets.VERCEL_TOKEN != '' }}
+          HAS_ORG: ${{ secrets.VERCEL_ORG_ID != '' }}
+          HAS_PROJECT: ${{ secrets.VERCEL_PROJECT_ID != '' }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ] || [ "$HAS_ORG" != "true" ] || [ "$HAS_PROJECT" != "true" ]; then
+            echo "::error title=Vercel deploy failed::Missing GitHub Actions secrets. Set VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID (see docs/DEPLOY_VERCEL.md Part 7)."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Deploy to Vercel
+        id: vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -29,3 +42,24 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Verify /api/health
+        run: |
+          set -euo pipefail
+          url="${{ steps.vercel.outputs.preview-url }}"
+          if [ -z "$url" ]; then
+            echo "::error::Vercel deploy did not return a deployment URL."
+            exit 1
+          fi
+          echo "Deployment URL: $url"
+          health="$url/api/health"
+          for attempt in 1 2 3 4 5 6; do
+            echo "Health check attempt $attempt: $health"
+            if body="$(curl -fsS "$health" 2>/dev/null)" && echo "$body" | grep -q '"ok"'; then
+              echo "OK: $body"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error title=Vercel deploy failed::Health check failed at $health after deploy."
+          exit 1
