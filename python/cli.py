@@ -261,6 +261,14 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("version")
+def version_cmd() -> None:
+    """Print installed package version."""
+    from python.saas.health import app_version
+
+    console.print(f"aityuahn {app_version()}")
+
+
 @main.command("doctor")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")

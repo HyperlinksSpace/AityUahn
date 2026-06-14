@@ -349,12 +349,31 @@
   function setMode(next, detail = "") {
     mode = next;
     const pill = document.getElementById("statusPill");
-    const labels = { live: "Live API", static: "Offline demo", offline: "Not connected", loading: "Connecting…" };
+    const labels = { live: "Forge live", static: "Offline demo", offline: "Forge offline", loading: "Connecting…" };
     pill.textContent = `${labels[next] || next}${detail ? " · " + detail : ""}`;
-    pill.className = `status-pill ${next}`;
+    pill.className = `status-pill ${next === "live" ? "live" : next}`;
     const hideOverlay = next === "live" || (next === "static" && !needsBackendBeforeUse());
     document.getElementById("blockedOverlay").classList.toggle("hidden", hideOverlay);
     if (!hideOverlay) refreshSetupOverlayContext();
+  }
+
+  function setSaasStatus(info) {
+    const pill = document.getElementById("saasStatusPill");
+    if (!pill) return;
+    if (!info?.configured) {
+      pill.classList.add("hidden");
+      return;
+    }
+    pill.classList.remove("hidden");
+    pill.textContent = info.label || "Cloud";
+    const tone = info.state === "ok" ? "live" : info.state === "error" || info.state === "issues" ? "warn" : "offline";
+    pill.className = `status-pill ${tone}`;
+    pill.title = info.error || info.base || "Cloud SaaS API";
+  }
+
+  async function refreshSaasStatus() {
+    if (!window.AityAuth?.probeSaasHealth) return;
+    setSaasStatus(await AityAuth.probeSaasHealth());
   }
 
   function loadDemoOverrides() {
@@ -412,7 +431,9 @@
     const health = await probeLiveApi(base);
     apiBase = base;
     localStorage.setItem(STORAGE_API, apiBase);
-    setMode("live", health.forge_data || apiBase);
+    const detail = health.version ? `v${health.version}` : health.forge_data || apiBase;
+    setMode("live", detail);
+    await refreshSaasStatus();
     return health;
   }
 
@@ -452,6 +473,7 @@
     }
     if (location.hostname.endsWith("github.io") || skipDemo) {
       setMode("offline");
+      await refreshSaasStatus();
       return;
     }
     try {
@@ -1013,6 +1035,7 @@
     await AitySetup.initSetupUi(AitySetup.IDS, (msg, err) => toast(msg, err));
     const demoParam = new URLSearchParams(location.search).get("demo") === "1";
     await resolveBackend(demoParam && !hasAuthIntent() && !currentUser());
+    await refreshSaasStatus();
     if (mode === "offline" && hasAuthIntent()) {
       refreshSetupOverlayContext();
       document.getElementById("blockedOverlay")?.classList.remove("hidden");

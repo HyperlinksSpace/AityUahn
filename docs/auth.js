@@ -115,10 +115,67 @@
     return JSON.stringify(body);
   }
 
-  async function probeApi(base) {
+  async function probeHealth(base) {
     const r = await fetch(`${base}/api/health`, { headers: { Accept: "application/json" } });
     if (!r.ok) throw new Error(`API not reachable at ${base} (HTTP ${r.status})`);
     return r.json();
+  }
+
+  function healthSummary(health) {
+    if (!health) return "";
+    if (health.role === "forge") {
+      return health.version ? `forge v${health.version}` : "forge live";
+    }
+    if (health.ok) {
+      return health.version ? `cloud v${health.version}` : "cloud OK";
+    }
+    const issue = (health.issues || health.warnings || [])[0];
+    return issue ? String(issue) : "cloud not ready";
+  }
+
+  async function probeApi(base) {
+    const health = await probeHealth(base);
+    if (health.role && health.role !== "forge") {
+      throw new Error(
+        `Expected local forge at ${base} (role=forge), got "${health.role}". Use port 8765, not your Vercel SaaS URL.`
+      );
+    }
+    if (health.ok === false) {
+      throw new Error(`Forge API not ready at ${base}`);
+    }
+    return health;
+  }
+
+  async function probeSaasHealth() {
+    await loadConfig();
+    const base = readSaasBase();
+    if (!base) return { configured: false, state: "unset" };
+    try {
+      const health = await probeHealth(base);
+      if (health.role !== "saas") {
+        return {
+          configured: true,
+          state: "wrong-role",
+          base,
+          label: `Not SaaS (${health.role || "unknown"})`,
+        };
+      }
+      return {
+        configured: true,
+        state: health.ok ? "ok" : "issues",
+        base,
+        health,
+        label: healthSummary(health),
+      };
+    } catch (ex) {
+      return {
+        configured: true,
+        state: "error",
+        base,
+        label: "Cloud offline",
+        error: String(ex.message || ex),
+      };
+    }
   }
 
   async function saasApi(path, opts = {}) {
@@ -156,7 +213,10 @@
     setForgeBase,
     setSaasBase,
     setApiBase,
+    probeHealth,
     probeApi,
+    probeSaasHealth,
+    healthSummary,
     saasApi,
     isLocalHost,
     PENDING_AUTH_KEY: "aityuahn-pending-auth",
