@@ -44,7 +44,18 @@ input, textarea, select {
 textarea { min-height: 88px; resize: vertical; }
 label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 0 0.25rem; }
 .muted { color: var(--muted); font-size: 0.88rem; }
-.hidden { display: none !important; }
+.guide-toc {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.guide-toc ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+.guide-toc a { color: var(--accent); }
+.guide-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+.guide-table th, .guide-table td { border: 1px solid var(--border); padding: 0.5rem 0.65rem; text-align: left; }
+.guide-table th { background: var(--panel); color: var(--muted); }
 
 .app-header {
   display: flex;

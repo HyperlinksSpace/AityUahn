@@ -390,3 +390,101 @@ git push
 | **Verify** | `aityuahn doctor` + checklist above |
 
 For cloud deployment details see [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md). For Windows installer CI see [INSTALL_RELEASE.md](INSTALL_RELEASE.md).
+
+---
+
+## 11. Windows walkthrough (Git Bash vs PowerShell)
+
+| Step | Git Bash | PowerShell |
+|------|----------|------------|
+| Install one-line | `curl -LsSf …/install.sh \| sh` | `irm …/install.ps1 \| iex` |
+| Activate venv | `source .venv/Scripts/activate` | `.\.venv\Scripts\Activate.ps1` |
+| Start forge | `aityuahn serve --demo` | same |
+| Verify | `bash scripts/verify_setup.sh` | `.\scripts\verify_setup.ps1` |
+| Doctor | `aityuahn doctor` | same |
+
+**Do not** run `irm | iex` inside Git Bash — use PowerShell for the Windows installer script.
+
+After one-line install, open a **new** terminal in `%USERPROFILE%\AityUahn` and run `serve.bat`.
+
+---
+
+## 12. Automated verification scripts
+
+With `aityuahn serve --demo` running:
+
+**Git Bash / Linux / macOS:**
+
+```bash
+bash scripts/verify_setup.sh
+# optional cloud:
+SAAS_URL=https://YOUR-APP.vercel.app bash scripts/verify_setup.sh
+```
+
+**PowerShell:**
+
+```powershell
+.\scripts\verify_setup.ps1
+.\scripts\verify_setup.ps1 -SaasUrl https://YOUR-APP.vercel.app
+```
+
+Equivalent manual check:
+
+```bash
+aityuahn doctor --forge-url http://127.0.0.1:8765 --saas-url https://YOUR-APP.vercel.app
+```
+
+---
+
+## 13. API endpoints (manual curl tests)
+
+### Local forge (`:8765`)
+
+```bash
+curl -s http://127.0.0.1:8765/api/health
+curl -s http://127.0.0.1:8765/api/dashboard
+curl -s http://127.0.0.1:8765/api/registry
+curl -s http://127.0.0.1:8765/api/providers
+```
+
+### Cloud SaaS (Vercel)
+
+```bash
+curl -s https://YOUR-APP.vercel.app/api/health
+curl -s https://YOUR-APP.vercel.app/api/saas/pricing
+curl -s -X POST https://YOUR-APP.vercel.app/api/saas/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"secret12","name":"Test","plan":"personal"}'
+```
+
+OpenAPI (local forge only): http://127.0.0.1:8765/docs
+
+---
+
+## 14. `config.json` (GitHub Pages UI)
+
+File: `python/static/config.json` — controls download links and default API URLs on Pages.
+
+| Key | Purpose |
+|-----|---------|
+| `defaultForgeApi` | Pre-filled local forge URL (`http://127.0.0.1:8765`) |
+| `defaultSaasApi` | Your Vercel URL for sign-in / teams (empty until deployed) |
+| `backendExe` | Windows installer download link |
+| `backendInstallerSh` / `backendInstallerPs1` | One-line install script URLs |
+
+After editing, rebuild Pages:
+
+```bash
+python scripts/build_pages.py
+```
+
+---
+
+## 15. Browsable guide on GitHub Pages
+
+Full HTML version (same content, easy navigation):
+
+**https://hyperlinksspace.github.io/AityUahn/guide.html**
+
+Also linked from **Docs** and **Controller** header menus.
+

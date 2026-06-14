@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/AityUahn/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AityUahn — Test &amp; Launch Guide</title>
+  <link rel="stylesheet" href="/AityUahn/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Test &amp; Launch</h1>
+      <nav class="header-nav">
+        <a href="/AityUahn/landing.html">Home</a>
+        <a href="/AityUahn/controller.html">Controller</a>
+        <a href="/AityUahn/docs.html">Docs</a>
+        <a href="/AityUahn/guide.html" class="active">Guide</a>
+      </nav>
+    </div>
+  </header>
+
+  <article class="docs-page">
+    <p class="muted">Complete reference for how AityUahn works, how to launch it, and how to verify every layer. Version 0.2.1.</p>
+
+    <nav class="guide-toc" aria-label="Table of contents">
+      <strong>On this page</strong>
+      <ul>
+        <li><a href="#architecture">How it works</a></li>
+        <li><a href="#launch">Launch paths</a></li>
+        <li><a href="#steps">Step-by-step launch</a></li>
+        <li><a href="#verify">Verify setup</a></li>
+        <li><a href="#checklist">Testing checklist</a></li>
+        <li><a href="#windows">Windows notes</a></li>
+        <li><a href="#troubleshoot">Troubleshooting</a></li>
+        <li><a href="#more">More docs</a></li>
+      </ul>
+    </nav>
+
+    <h2 id="architecture">How it works</h2>
+    <p>AityUahn has <strong>three layers</strong> that can run in different places:</p>
+    <ul>
+      <li><strong>Browser UI</strong> — GitHub Pages or <code>aityuahn serve</code> (landing, controller, docs)</li>
+      <li><strong>Local forge API</strong> — <code>aityuahn serve</code> on port <strong>8765</strong> (<code>role: forge</code>): kanban, ideas, backlogs, agents, files on disk</li>
+      <li><strong>Cloud SaaS API</strong> — Vercel + Neon (<code>role: saas</code>): sign-in, teams, TON billing</li>
+    </ul>
+    <pre>Browser  ──forge──►  http://127.0.0.1:8765     (your PC)
+Browser  ──auth──►  https://YOUR-APP.vercel.app  (defaultSaasApi)</pre>
+    <p>Controller header pills: <strong>Forge live</strong> + optional <strong>cloud v…</strong>. Never paste the Vercel URL into the forge field.</p>
+
+    <h2 id="launch">Launch paths</h2>
+    <h3>A — One-line install</h3>
+    <p><strong>PowerShell:</strong></p>
+    <pre id="guideInstallPs1">irm https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.ps1 | iex</pre>
+    <p><strong>Git Bash:</strong></p>
+    <pre id="guideInstallSh">curl -LsSf https://raw.githubusercontent.com/HyperlinksSpace/AityUahn/main/scripts/install.sh | sh</pre>
+    <p>Then: <code>cd ~/AityUahn</code> (or <code>%USERPROFILE%\AityUahn</code>) → <code>serve.bat</code> or <code>aityuahn serve</code>.</p>
+
+    <h3>B — Windows .exe</h3>
+    <p><a id="guideBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Download aityuahn-installer.exe</a> (requires Python 3.11+).</p>
+
+    <h3>C — Developer clone</h3>
+    <pre>git clone https://github.com/HyperlinksSpace/AityUahn.git
+cd AityUahn
+python -m venv .venv && source .venv/Scripts/activate
+pip install -e ".[dev]"
+cp config/forge.example.yaml forge.yaml && cp .env.example .env
+aityuahn serve --demo</pre>
+
+    <h2 id="steps">Step-by-step launch</h2>
+    <ol>
+      <li>Edit <code>forge.yaml</code> — set <code>workspace_root</code></li>
+      <li>Run <code>aityuahn serve --demo</code> — keep terminal open</li>
+      <li>Open <a href="/AityUahn/controller.html">Controller</a> at <code id="guideControllerUrl">http://127.0.0.1:8765/controller.html</code></li>
+      <li>Paste <code id="guideForgeUrl">http://127.0.0.1:8765</code> → <strong>Connect</strong> → <strong>Forge live</strong></li>
+      <li>Optional cloud: deploy Vercel, set <code>defaultSaasApi</code> in config, rebuild Pages</li>
+    </ol>
+
+    <h2 id="verify">Verify setup</h2>
+    <pre>curl http://127.0.0.1:8765/api/health
+aityuahn doctor
+aityuahn version
+bash scripts/verify_setup.sh          # Git Bash
+.\scripts\verify_setup.ps1            # PowerShell</pre>
+    <p>Expected forge health: <code>"ok": true</code>, <code>"role": "forge"</code>, <code>"version": "0.2.1"</code>.</p>
+    <p>With cloud: <code>SAAS_URL=https://YOUR-APP.vercel.app bash scripts/verify_setup.sh</code></p>
+
+    <h2 id="checklist">Testing checklist (summary)</h2>
+    <table class="guide-table">
+      <thead><tr><th>Layer</th><th>Quick test</th><th>Pass</th></tr></thead>
+      <tbody>
+        <tr><td>CLI</td><td><code>aityuahn version</code></td><td>prints version</td></tr>
+        <tr><td>Forge</td><td><code>curl …/api/health</code></td><td>role=forge, ok=true</td></tr>
+        <tr><td>UI</td><td>Connect in controller</td><td>Forge live pill</td></tr>
+        <tr><td>Kanban</td><td>Move a task</td><td>No error</td></tr>
+        <tr><td>Demo</td><td><code>?demo=1</code></td><td>Works without API</td></tr>
+        <tr><td>Cloud</td><td><code>curl …/api/health</code> on Vercel</td><td>role=saas, ok=true</td></tr>
+        <tr><td>Auth</td><td>Register on landing</td><td>Token returned</td></tr>
+        <tr><td>Dev</td><td><code>pytest -q</code></td><td>All green</td></tr>
+      </tbody>
+    </table>
+    <p>Full 22-item checklist: <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md#5-testing-checklist">TEST_AND_LAUNCH.md §5</a></p>
+
+    <h2 id="windows">Windows notes</h2>
+    <ul>
+      <li>Use <strong>PowerShell</strong> for <code>irm | iex</code> — not Git Bash</li>
+      <li>Use <strong>Git Bash</strong> for <code>curl | sh</code> install script</li>
+      <li>Activate venv: <code>source .venv/Scripts/activate</code> (Bash) or <code>.\.venv\Scripts\Activate.ps1</code> (PS)</li>
+      <li>From GitHub Pages, localhost is not reachable — open UI from <code>aityuahn serve</code> or use a tunnel</li>
+    </ul>
+
+    <h2 id="troubleshoot">Troubleshooting</h2>
+    <table class="guide-table">
+      <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Connect fails from Pages</td><td>Use UI from <code>aityuahn serve</code> or ngrok tunnel</td></tr>
+        <tr><td>“Expected forge… got saas”</td><td>Forge URL must be <code>:8765</code>, not Vercel</td></tr>
+        <tr><td>Cloud pill shows issues</td><td>Set <code>DATABASE_URL</code> + <code>AITYUAHN_JWT_SECRET</code> on Vercel</td></tr>
+        <tr><td>Sign-in 405 on Pages</td><td>Set <code>defaultSaasApi</code> in config.json</td></tr>
+        <tr><td><code>doctor</code> forge fail</td><td>Start <code>aityuahn serve</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="more">More docs</h2>
+    <ul>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">TEST_AND_LAUNCH.md</a> — full markdown guide</li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">DEPLOY_VERCEL.md</a> — Vercel + Neon</li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/INSTALL_RELEASE.md">INSTALL_RELEASE.md</a> — Windows exe releases</li>
+      <li><a href="/AityUahn/docs.html">Setup docs</a> — install, configure, run</li>
+    </ul>
+  </article>
+  <script src="/AityUahn/setup.js"></script>
+  <script>
+    (async () => {
+      try {
+        const cfg = await fetch(new URL("config.json", document.baseURI)).then((r) => r.ok ? r.json() : {});
+        const local = cfg.defaultApiLocal || "http://127.0.0.1:8765";
+        const set = (id, href) => { const el = document.getElementById(id); if (el && href) el.href = href; };
+        const text = (id, value) => { const el = document.getElementById(id); if (el && value) el.textContent = value; };
+        set("guideBackendExe", cfg.backendExe);
+        text("guideForgeUrl", local);
+        text("guideControllerUrl", local + "/controller.html");
+        const lines = window.AitySetup?.installOneLiners(cfg) || {};
+        text("guideInstallPs1", lines.powershell);
+        text("guideInstallSh", lines.gitBash);
+      } catch { /* static fallbacks */ }
+    })();
+  </script>
+</body>
+</html>
