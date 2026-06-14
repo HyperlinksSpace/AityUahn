@@ -22,6 +22,29 @@
     <h2>Quick start</h2>
     <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="controller.html">Controller</a> for kanban, tasks, forge, and agents.</p>
     <p>The web UI can run on GitHub Pages, but <strong>forge, agents, sign-in, and team billing require the Python backend</strong> (<code>aityuahn serve</code>). Follow the steps below to download it, run it, and verify everything works.</p>
+    <p><strong>Full guide:</strong> <a id="docsTestLaunchGuide" href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">Test &amp; Launch Guide</a> — architecture, launch paths, testing checklist, troubleshooting.</p>
+
+    <h2 id="how-it-works">How it works</h2>
+    <p>AityUahn splits into <strong>local forge</strong> (your PC) and <strong>cloud SaaS</strong> (Vercel + Neon):</p>
+    <ul>
+      <li><strong>Local forge</strong> — <code>aityuahn serve</code> on port <strong>8765</strong>: kanban, ideas, backlogs, agents, project files on disk.</li>
+      <li><strong>Cloud SaaS</strong> — Vercel URL from <code>defaultSaasApi</code>: register, sign-in, team projects, TON billing. Data in Neon Postgres.</li>
+      <li><strong>Static UI</strong> — GitHub Pages or the same HTML from <code>aityuahn serve</code>; connects to both APIs.</li>
+    </ul>
+    <p>Controller header pills: <strong>Forge live</strong> (local) and <strong>cloud v…</strong> (SaaS health). Do not paste the Vercel URL into the forge field — use <code>http://127.0.0.1:8765</code>.</p>
+    <pre>Browser UI  ──forge──►  http://127.0.0.1:8765  (aityuahn serve)
+Browser UI  ──auth──►  https://YOUR-APP.vercel.app  (defaultSaasApi)</pre>
+
+    <h2 id="launch-checklist">Launch checklist (summary)</h2>
+    <ol>
+      <li>Install — one-line script, <code>.exe</code>, or <code>git clone</code> + <code>pip install -e ".[dev]"</code></li>
+      <li>Configure — <code>forge.yaml</code>, optional <code>.env</code> API keys</li>
+      <li>Run — <code>aityuahn serve --demo</code></li>
+      <li>Verify — <code>curl http://127.0.0.1:8765/api/health</code> and <code>aityuahn doctor</code></li>
+      <li>Connect — Controller → paste forge URL → <strong>Forge live</strong></li>
+      <li>Cloud (optional) — deploy SaaS, set <code>defaultSaasApi</code>, rebuild Pages</li>
+    </ol>
+    <p>See the <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md#5-testing-checklist">full testing checklist</a> (CLI, UI, SaaS, CI).</p>
 
     <h2 id="backend">Download the local forge (Windows)</h2>
     <p>The <strong>local forge</strong> runs on your PC (<code>aityuahn serve</code>). Cloud sign-in/billing is separate on Vercel — see the <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">Vercel deploy guide</a>.</p>
@@ -107,13 +130,15 @@ CURSOR_API_KEY=crsr_...</pre>
 
     <h2 id="verify">Verify the backend is running</h2>
     <p>In a <strong>second terminal</strong> (with the server still running):</p>
-    <pre>curl http://127.0.0.1:8765/api/health</pre>
-    <p>You should see JSON like <code>{"ok": true, "workspace": "...", ...}</code>. If curl is unavailable, open the health URL in your browser.</p>
+    <pre>curl http://127.0.0.1:8765/api/health
+aityuahn doctor
+aityuahn version</pre>
+    <p>Forge health should include <code>"ok": true</code>, <code>"role": "forge"</code>, and <code>"version"</code>. Cloud SaaS (if deployed) returns <code>"role": "saas"</code> — see <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">DEPLOY_VERCEL.md</a>.</p>
     <p>Then connect the controller:</p>
     <ol>
       <li>Open <a href="controller.html">Controller</a> (local serve URL or GitHub Pages).</li>
-      <li>Paste <code id="docsDefaultApi">http://127.0.0.1:8765</code> into <strong>API backend</strong>.</li>
-      <li>Click <strong>Connect</strong> — status should show <strong>Live API</strong>.</li>
+      <li>Paste <code id="docsDefaultApi">http://127.0.0.1:8765</code> into <strong>Local forge API</strong>.</li>
+      <li>Click <strong>Connect</strong> — status should show <strong>Forge live</strong> (and a cloud pill if <code>defaultSaasApi</code> is set).</li>
     </ol>
     <p>From GitHub Pages (<code>hyperlinksspace.github.io/AityUahn</code>), the UI cannot reach <code>127.0.0.1</code> on your PC unless you use a tunnel (Cloudflare Tunnel, ngrok) and paste the public HTTPS URL instead.</p>
 
@@ -164,8 +189,14 @@ aityuahn test my-project</pre>
     <h2>Configuration</h2>
     <p>Edit <code>forge.yaml</code> for workspace path, AI providers (Claude, Cursor, Ollama, etc.), and role routing. API keys go in <code>.env</code> — never commit secrets.</p>
 
-    <h2>Repository</h2>
-    <p><a id="docsRepoFooter" href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a> · <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">README</a></p>
+    <h2>Repository &amp; guides</h2>
+    <ul>
+      <li><a id="docsRepoFooter" href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a></li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">Test &amp; Launch Guide</a></li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">Deploy SaaS to Vercel + Neon</a></li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/INSTALL_RELEASE.md">Windows installer releases</a></li>
+      <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">README</a></li>
+    </ul>
   </article>
   <script src="/static/setup.js"></script>
   <script>

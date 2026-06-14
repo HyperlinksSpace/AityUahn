@@ -22,6 +22,8 @@
 
 Repository: [github.com/HyperlinksSpace/AityUahn](https://github.com/HyperlinksSpace/AityUahn)
 
+**Guides:** [Test & Launch](docs/TEST_AND_LAUNCH.md) · [Deploy SaaS (Vercel + Neon)](docs/DEPLOY_VERCEL.md) · [Windows installer](docs/INSTALL_RELEASE.md)
+
 ---
 
 ## Quick start (local)
@@ -400,10 +402,14 @@ aityuahn test tinymodel-v2 --command "pytest -q"
 
 ## Testing AityUahn itself
 
+See **[docs/TEST_AND_LAUNCH.md](docs/TEST_AND_LAUNCH.md)** for the full launch paths, architecture, UI/CLI/SaaS checklist, and troubleshooting.
+
 ```bash
 pip install -e ".[dev]"
+aityuahn serve --demo          # terminal 1
+aityuahn doctor                # terminal 2 — probe forge + optional cloud
 pytest -q
-ruff check aityuahn tests
+ruff check python tests
 ```
 
 ---

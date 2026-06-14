@@ -30,6 +30,7 @@ def test_build_pages(tmp_path: Path, monkeypatch):
     assert "Download the local forge" in docs_html
     assert "install-one-line" in docs_html
     assert "releases/latest/download/aityuahn-installer.exe" in docs_html
+    assert "TEST_AND_LAUNCH" in docs_html or "Test &amp; Launch" in docs_html
     config_text = (docs / "config.json").read_text(encoding="utf-8")
     assert "backendZip" in config_text
     assert "backendInstallerPs1" in config_text
