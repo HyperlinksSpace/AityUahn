@@ -8,6 +8,7 @@ Related docs:
 
 | Doc | Purpose |
 |-----|---------|
+| [HOW_IT_WORKS.md](HOW_IT_WORKS.md) | Architecture deep-dive (APIs, auth, data flow) |
 | [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) | Cloud SaaS on Vercel + Neon |
 | [INSTALL_RELEASE.md](INSTALL_RELEASE.md) | Windows `.exe` auto-releases |
 | [README.md](../README.md) | CLI, providers, architecture |
@@ -431,6 +432,8 @@ SAAS_URL=https://YOUR-APP.vercel.app bash scripts/verify_setup.sh
 Equivalent manual check:
 
 ```bash
+aityuahn verify
+aityuahn verify --saas-url https://YOUR-APP.vercel.app
 aityuahn doctor --forge-url http://127.0.0.1:8765 --saas-url https://YOUR-APP.vercel.app
 ```
 

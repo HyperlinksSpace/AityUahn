@@ -234,7 +234,10 @@ def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: b
             console.print(f"[dim]Demo data[/dim]     {slug} (see dashboard)")
     app = create_app(forge, include_saas=with_saas)
     console.print(f"[green]Forge UI[/green]    http://{host}:{port}/")
+    console.print(f"[dim]Controller[/dim]  http://{host}:{port}/controller.html")
+    console.print(f"[dim]Guide[/dim]       http://{host}:{port}/guide.html")
     console.print(f"[dim]Forge API[/dim]    http://{host}:{port}/api/health")
+    console.print(f"[dim]Verify[/dim]       aityuahn verify  (in another terminal)")
     if with_saas:
         console.print(f"[dim]SaaS API[/dim]     http://{host}:{port}/api/saas/pricing")
     else:
@@ -274,69 +277,56 @@ def version_cmd() -> None:
 @click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
 @click.option("--json-out", is_flag=True, help="Print raw JSON.")
 def doctor_cmd(forge_url: str, saas_url: str | None, json_out: bool) -> None:
-    """Check local forge and optional cloud SaaS readiness."""
-    import httpx
+    """Check local forge and optional cloud SaaS readiness (detailed table)."""
+    from python.verify_setup import run_verification
 
-    forge_url = forge_url.rstrip("/")
-    report: dict[str, object] = {"forge_url": forge_url, "checks": []}
-    failed = 0
-
-    def add(name: str, ok: bool, detail: str, payload: dict | None = None) -> None:
-        nonlocal failed
-        if not ok:
-            failed += 1
-        entry: dict[str, object] = {"name": name, "ok": ok, "detail": detail}
-        if payload:
-            entry["data"] = payload
-        report["checks"].append(entry)
-
-    try:
-        with httpx.Client(timeout=8.0) as client:
-            r = client.get(f"{forge_url}/api/health", headers={"Accept": "application/json"})
-            if r.status_code == 200:
-                body = r.json()
-                ok = body.get("ok") is True and body.get("role") == "forge"
-                add("forge", ok, f"{forge_url}/api/health", body)
-            else:
-                add("forge", False, f"HTTP {r.status_code} from {forge_url}/api/health")
-
-            if saas_url:
-                saas_url = saas_url.rstrip("/")
-                report["saas_url"] = saas_url
-                r = client.get(f"{saas_url}/api/health", headers={"Accept": "application/json"})
-                if r.status_code == 200:
-                    body = r.json()
-                    ok = body.get("ok") is True and body.get("role") == "saas"
-                    issues = body.get("issues") or []
-                    detail = saas_url + "/api/health"
-                    if issues:
-                        detail += " — " + "; ".join(str(i) for i in issues)
-                    add("saas", ok, detail, body)
-                else:
-                    add("saas", False, f"HTTP {r.status_code} from {saas_url}/api/health")
-    except httpx.HTTPError as exc:
-        add("forge", False, f"Could not reach forge: {exc}")
-
-    report["ok"] = failed == 0
+    report = run_verification(forge_url, saas_url)
+    payload: dict[str, object] = {
+        "forge_url": report.forge_url,
+        "saas_url": report.saas_url,
+        "ok": report.ok,
+        "checks": [
+            {"name": c.name, "ok": c.ok, "detail": c.detail, **({"data": c.data} if c.data else {})}
+            for c in report.checks
+        ],
+    }
     if json_out:
-        console.print_json(json.dumps(report, default=str))
+        console.print_json(json.dumps(payload, default=str))
     else:
         table = Table(title="AityUahn doctor")
         table.add_column("Check")
         table.add_column("Status")
         table.add_column("Detail")
-        for check in report["checks"]:
+        for check in report.checks:
             table.add_row(
-                str(check["name"]),
-                "[green]ok[/green]" if check["ok"] else "[red]fail[/red]",
-                str(check["detail"]),
+                check.name,
+                "[green]ok[/green]" if check.ok else "[red]fail[/red]",
+                check.detail,
             )
         console.print(table)
-        if report["ok"]:
+        if report.ok:
             console.print("[green]All checks passed[/green]")
         else:
-            console.print(f"[red]{failed} check(s) failed[/red]")
-    if not report["ok"]:
+            console.print(f"[red]{report.failed_count} check(s) failed[/red]")
+    if not report.ok:
+        raise SystemExit(1)
+
+
+@main.command("verify")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
+def verify_cmd(forge_url: str, saas_url: str | None) -> None:
+    """Verify forge and optional cloud SaaS are reachable (pass/fail, for scripts and CI)."""
+    from python.verify_setup import run_verification
+
+    report = run_verification(forge_url, saas_url)
+    for check in report.checks:
+        mark = "[green]✓[/green]" if check.ok else "[red]✗[/red]"
+        console.print(f"{mark} {check.name:5}  {check.detail}")
+    if report.ok:
+        console.print("[green]Verification passed[/green]")
+    else:
+        console.print(f"[red]Verification failed ({report.failed_count} check(s))[/red]")
         raise SystemExit(1)
 
 

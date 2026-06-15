@@ -22,7 +22,9 @@
 
 Repository: [github.com/HyperlinksSpace/AityUahn](https://github.com/HyperlinksSpace/AityUahn)
 
-**Guides:** [Test & Launch](docs/TEST_AND_LAUNCH.md) · [Guide (HTML)](docs/guide.html) · [Deploy SaaS (Vercel + Neon)](docs/DEPLOY_VERCEL.md) · [Windows installer](docs/INSTALL_RELEASE.md)
+**Guides:** [Test & Launch](docs/TEST_AND_LAUNCH.md) · [How it works](docs/HOW_IT_WORKS.md) · [Guide (HTML)](docs/guide.html) · [Deploy SaaS](docs/DEPLOY_VERCEL.md) · [Windows installer](docs/INSTALL_RELEASE.md)
+
+**Quick verify:** `aityuahn serve --demo` then `aityuahn verify` in another terminal.
 
 ---
 

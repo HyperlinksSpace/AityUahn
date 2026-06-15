@@ -196,6 +196,10 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
         def docs_html() -> FileResponse:
             return FileResponse(STATIC_DIR / "docs.html")
 
+        @app.get("/guide.html")
+        def guide_html() -> FileResponse:
+            return FileResponse(STATIC_DIR / "guide.html")
+
         @app.get("/")
         def ui() -> FileResponse:
             landing = STATIC_DIR / "landing.html"

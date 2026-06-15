@@ -46,6 +46,10 @@ def test_health_and_ui(tmp_path: Path):
     assert r.status_code == 200
     assert "kanban" in r.text.lower()
 
+    r = client.get("/guide.html")
+    assert r.status_code == 200
+    assert "Test" in r.text and "Launch" in r.text
+
     r = client.get("/demo-data.json")
     assert r.status_code == 200
     assert r.json()["projects"][0]["slug"] == "demo-dashboard"
