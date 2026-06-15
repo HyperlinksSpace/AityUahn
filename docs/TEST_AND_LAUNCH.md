@@ -285,6 +285,7 @@ Use this table to confirm each layer works.
 | 1 | CLI installed | `aityuahn version` | Prints `aityuahn 0.2.1` |
 | 2 | Forge data dirs | `aityuahn init` | Prints workspace + forge data paths |
 | 3 | Forge health | `curl localhost:8765/api/health` | `"ok": true`, `"role": "forge"` |
+| 3b | Forge info | `curl localhost:8765/api/info` | `"role": "forge"`, `"links"` object |
 | 4 | Doctor | `aityuahn doctor` | Forge check **ok** |
 | 5 | Demo data | `aityuahn serve --demo` | Dashboard has demo project |
 | 6 | Registry | `aityuahn list` | Lists ideas/backlogs/projects |

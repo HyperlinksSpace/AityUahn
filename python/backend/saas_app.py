@@ -10,6 +10,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from python.forge import LForge
+from python.api_info import saas_info
 from python.saas.health import app_version, saas_health
 from python.saas.router import create_saas_router
 
@@ -38,6 +39,10 @@ def create_saas_app(forge: LForge | None = None) -> FastAPI:
     @app.get("/api/health")
     def health() -> dict[str, Any]:
         return saas_health(serverless=serverless)
+
+    @app.get("/api/info")
+    def info() -> dict[str, Any]:
+        return saas_info(serverless=serverless)
 
     @app.get("/api/cron/ton-poll")
     async def cron_ton_poll(authorization: str | None = Header(default=None)) -> dict[str, Any]:

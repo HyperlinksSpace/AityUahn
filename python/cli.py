@@ -237,7 +237,7 @@ def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: b
     console.print(f"[dim]Controller[/dim]  http://{host}:{port}/controller.html")
     console.print(f"[dim]Guide[/dim]       http://{host}:{port}/guide.html")
     console.print(f"[dim]Forge API[/dim]    http://{host}:{port}/api/health")
-    console.print(f"[dim]Verify[/dim]       aityuahn verify  (in another terminal)")
+    console.print(f"[dim]Open UI[/dim]       aityuahn open")
     if with_saas:
         console.print(f"[dim]SaaS API[/dim]     http://{host}:{port}/api/saas/pricing")
     else:
@@ -312,21 +312,61 @@ def doctor_cmd(forge_url: str, saas_url: str | None, json_out: bool) -> None:
         raise SystemExit(1)
 
 
+@main.command("open")
+@click.option(
+    "--page",
+    type=click.Choice(["controller", "guide", "docs", "landing"], case_sensitive=False),
+    default="controller",
+    show_default=True,
+    help="UI page to open.",
+)
+@click.option("--host", default="127.0.0.1", help="Forge host (must be running).")
+@click.option("--port", default=8765, type=int, help="Forge port.")
+def open_cmd(page: str, host: str, port: int) -> None:
+    """Open the forge UI in your default browser."""
+    import webbrowser
+
+    paths = {
+        "controller": "/controller.html",
+        "guide": "/guide.html",
+        "docs": "/docs.html",
+        "landing": "/",
+    }
+    url = f"http://{host}:{port}{paths[page]}"
+    console.print(f"[green]Opening[/green] {url}")
+    console.print("[dim]Start the forge first if needed:[/dim] aityuahn serve --demo")
+    webbrowser.open(url)
+
+
 @main.command("verify")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
-def verify_cmd(forge_url: str, saas_url: str | None) -> None:
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def verify_cmd(forge_url: str, saas_url: str | None, json_out: bool) -> None:
     """Verify forge and optional cloud SaaS are reachable (pass/fail, for scripts and CI)."""
     from python.verify_setup import run_verification
 
     report = run_verification(forge_url, saas_url)
-    for check in report.checks:
-        mark = "[green]✓[/green]" if check.ok else "[red]✗[/red]"
-        console.print(f"{mark} {check.name:5}  {check.detail}")
-    if report.ok:
-        console.print("[green]Verification passed[/green]")
+    payload = {
+        "forge_url": report.forge_url,
+        "saas_url": report.saas_url,
+        "ok": report.ok,
+        "checks": [
+            {"name": c.name, "ok": c.ok, "detail": c.detail, **({"data": c.data} if c.data else {})}
+            for c in report.checks
+        ],
+    }
+    if json_out:
+        console.print_json(json.dumps(payload, default=str))
     else:
-        console.print(f"[red]Verification failed ({report.failed_count} check(s))[/red]")
+        for check in report.checks:
+            mark = "[green]✓[/green]" if check.ok else "[red]✗[/red]"
+            console.print(f"{mark} {check.name:5}  {check.detail}")
+        if report.ok:
+            console.print("[green]Verification passed[/green]")
+        else:
+            console.print(f"[red]Verification failed ({report.failed_count} check(s))[/red]")
+    if not report.ok:
         raise SystemExit(1)
 
 

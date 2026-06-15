@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from python.forge import LForge
 from python.models import TaskStatus
+from python.api_info import forge_info
 from python.saas.health import app_version
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
@@ -61,7 +62,7 @@ class PromptRequest(BaseModel):
 
 def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> FastAPI:
     engine = forge or LForge()
-    app = FastAPI(title="AityUahn Forge", version="0.2.0")
+    app = FastAPI(title="AityUahn Forge", version=app_version())
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -79,6 +80,10 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
             "forge_data": str(engine.config.forge_data_dir),
             "default_provider": engine.config.default_provider,
         }
+
+    @app.get("/api/info")
+    def info() -> dict[str, Any]:
+        return forge_info(engine)
 
     @app.get("/api/registry")
     def registry() -> dict[str, Any]:
