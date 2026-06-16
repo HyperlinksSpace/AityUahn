@@ -278,6 +278,42 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("info")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Forge or SaaS API base URL.")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def info_cmd(forge_url: str, json_out: bool) -> None:
+    """Fetch /api/info from a running forge or SaaS API."""
+    import httpx
+
+    url = forge_url.rstrip("/") + "/api/info"
+    try:
+        r = httpx.get(url, headers={"Accept": "application/json"}, timeout=8.0)
+        r.raise_for_status()
+        body = r.json()
+    except httpx.HTTPError as exc:
+        console.print(f"[red]Could not fetch {url}[/red]: {exc}")
+        raise SystemExit(1) from exc
+
+    if json_out:
+        console.print_json(json.dumps(body, default=str))
+        return
+
+    table = Table(title=f"{body.get('name', 'API')} · {body.get('version', '?')}")
+    table.add_column("Field")
+    table.add_column("Value")
+    for key in ("role", "version", "workspace", "forge_data", "default_provider", "storage", "serverless"):
+        if key in body and body[key] is not None:
+            table.add_row(key, str(body[key]))
+    if body.get("providers_enabled"):
+        table.add_row("providers_enabled", ", ".join(body["providers_enabled"]))
+    console.print(table)
+    links = body.get("links") or {}
+    if links:
+        console.print("[bold]Links[/bold]")
+        for name, path in links.items():
+            console.print(f"  {name}: {forge_url.rstrip('/')}{path}")
+
+
 @main.command("status")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")

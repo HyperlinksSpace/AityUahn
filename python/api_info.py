@@ -30,7 +30,9 @@ def forge_info(engine: LForge) -> dict[str, Any]:
         "cli": {
             "serve": "Run local forge API + UI",
             "forge": "Idea + backlog + scaffold in one step",
+            "status": "Local config + API reachability",
             "verify": "Check forge (and optional cloud) reachability",
+            "info": "Fetch this /api/info payload from CLI",
             "open": "Open controller or guide in browser",
         },
     }

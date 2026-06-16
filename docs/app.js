@@ -352,9 +352,41 @@
     const labels = { live: "Forge live", static: "Offline demo", offline: "Forge offline", loading: "Connecting…" };
     pill.textContent = `${labels[next] || next}${detail ? " · " + detail : ""}`;
     pill.className = `status-pill ${next === "live" ? "live" : next}`;
+    const connectBtn = document.getElementById("btnConnect");
+    if (connectBtn) connectBtn.textContent = next === "offline" ? "Reconnect" : "Connect";
     const hideOverlay = next === "live" || (next === "static" && !needsBackendBeforeUse());
     document.getElementById("blockedOverlay").classList.toggle("hidden", hideOverlay);
     if (!hideOverlay) refreshSetupOverlayContext();
+    if (next === "offline") startReconnectPoll();
+    else stopReconnectPoll();
+  }
+
+  let reconnectTimer = null;
+
+  function startReconnectPoll() {
+    if (reconnectTimer) return;
+    reconnectTimer = setInterval(async () => {
+      if (mode !== "offline") return;
+      const base = (document.getElementById("apiBaseInput")?.value || "").trim().replace(/\/$/, "");
+      if (!base) return;
+      try {
+        await connectLive(base);
+        updateAuthUI();
+        await loadProviders();
+        await refresh();
+        await afterBackendReady();
+        toast("Reconnected to forge");
+      } catch {
+        /* still offline */
+      }
+    }, 15000);
+  }
+
+  function stopReconnectPoll() {
+    if (reconnectTimer) {
+      clearInterval(reconnectTimer);
+      reconnectTimer = null;
+    }
   }
 
   function setSaasStatus(info) {
