@@ -346,12 +346,21 @@
     return "";
   }
 
+def format_uptime(seconds) {
+    if (seconds == null || Number.isNaN(Number(seconds))) return "";
+    const s = Number(seconds);
+    if (s < 60) return `up ${Math.round(s)}s`;
+    if (s < 3600) return `up ${Math.floor(s / 60)}m`;
+    return `up ${Math.floor(s / 3600)}h`;
+  }
+
   function setMode(next, detail = "") {
     mode = next;
     const pill = document.getElementById("statusPill");
     const labels = { live: "Forge live", static: "Offline demo", offline: "Forge offline", loading: "Connecting…" };
     pill.textContent = `${labels[next] || next}${detail ? " · " + detail : ""}`;
-    pill.className = `status-pill ${next === "live" ? "live" : next}`;
+    pill.className = `status-pill ${next === "live" ? "live" : next} clickable`;
+    pill.title = next === "live" ? "Click to refresh health" : next === "offline" ? "Click to reconnect" : "";
     const connectBtn = document.getElementById("btnConnect");
     if (connectBtn) connectBtn.textContent = next === "offline" ? "Reconnect" : "Connect";
     const hideOverlay = next === "live" || (next === "static" && !needsBackendBeforeUse());
@@ -359,6 +368,38 @@
     if (!hideOverlay) refreshSetupOverlayContext();
     if (next === "offline") startReconnectPoll();
     else stopReconnectPoll();
+    if (next === "live") startLiveHealthPoll();
+    else stopLiveHealthPoll();
+  }
+
+  let liveHealthTimer = null;
+
+  async function refreshLiveHealth() {
+    if (mode !== "live" || !apiBase) return;
+    try {
+      const health = await probeLiveApi(apiBase);
+      const parts = [];
+      if (health.version) parts.push(`v${health.version}`);
+      const up = formatUptime(health.uptime_seconds);
+      if (up) parts.push(up);
+      setMode("live", parts.join(" · ") || apiBase);
+      await refreshSaasStatus();
+    } catch {
+      setMode("offline");
+      toast("Lost connection to forge", true);
+    }
+  }
+
+  function startLiveHealthPoll() {
+    if (liveHealthTimer) return;
+    liveHealthTimer = setInterval(refreshLiveHealth, 60000);
+  }
+
+  function stopLiveHealthPoll() {
+    if (liveHealthTimer) {
+      clearInterval(liveHealthTimer);
+      liveHealthTimer = null;
+    }
   }
 
   let reconnectTimer = null;
@@ -463,8 +504,11 @@
     const health = await probeLiveApi(base);
     apiBase = base;
     localStorage.setItem(STORAGE_API, apiBase);
-    const detail = health.version ? `v${health.version}` : health.forge_data || apiBase;
-    setMode("live", detail);
+    const parts = [];
+    if (health.version) parts.push(`v${health.version}`);
+    const up = formatUptime(health.uptime_seconds);
+    if (up) parts.push(up);
+    setMode("live", parts.join(" · ") || health.forge_data || apiBase);
     await refreshSaasStatus();
     return health;
   }
@@ -817,6 +861,16 @@
     };
 
     document.getElementById("btnConnect").onclick = () => doConnect();
+    document.getElementById("statusPill")?.addEventListener("click", async () => {
+      if (mode === "live") {
+        await refreshLiveHealth();
+        toast("Forge health refreshed");
+        return;
+      }
+      if (mode === "offline") {
+        await doConnect();
+      }
+    });
     document.getElementById("btnOverlayConnect").onclick = () =>
       doConnect(document.getElementById("overlayApiInput") || document.getElementById("apiBaseInput"));
 

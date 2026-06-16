@@ -278,6 +278,40 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("ping")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--quiet", "-q", is_flag=True, help="Print one line only (for scripts).")
+def ping_cmd(forge_url: str, quiet: bool) -> None:
+    """Quick health check — one line, exit 0 when forge is up."""
+    import httpx
+
+    url = forge_url.rstrip("/") + "/api/health"
+    try:
+        r = httpx.get(url, headers={"Accept": "application/json"}, timeout=5.0)
+        r.raise_for_status()
+        body = r.json()
+    except httpx.HTTPError as exc:
+        if quiet:
+            console.print(f"fail {forge_url} ({exc})")
+        else:
+            console.print(f"[red]Forge unreachable[/red] at {url}: {exc}")
+        raise SystemExit(1) from exc
+
+    ok = body.get("ok") is True and body.get("role") == "forge"
+    version = body.get("version", "?")
+    uptime = body.get("uptime_seconds")
+    up = f" uptime={uptime}s" if uptime is not None else ""
+    line = f"ok forge v{version}{up}" if ok else f"fail forge ({body.get('role', 'unknown')})"
+    if quiet:
+        console.print(line)
+    elif ok:
+        console.print(f"[green]{line}[/green]")
+    else:
+        console.print(f"[red]{line}[/red]")
+    if not ok:
+        raise SystemExit(1)
+
+
 @main.command("dashboard")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--json-out", is_flag=True, help="Print raw JSON.")

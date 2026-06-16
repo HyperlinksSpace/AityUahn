@@ -34,6 +34,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
             "verify": "Check forge (and optional cloud) reachability",
             "info": "Fetch this /api/info payload from CLI",
             "dashboard": "Print kanban summary from running forge",
+            "ping": "One-line forge health check for scripts",
             "open": "Open controller or guide in browser",
         },
     }
