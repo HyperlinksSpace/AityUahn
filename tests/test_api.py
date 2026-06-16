@@ -36,7 +36,10 @@ def test_health_and_ui(tmp_path: Path):
     client = TestClient(create_app(forge))
     r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.json()["ok"] is True
+    body = r.json()
+    assert body["ok"] is True
+    assert "uptime_seconds" in body
+    assert body["uptime_seconds"] >= 0
 
     r = client.get("/")
     assert r.status_code == 200

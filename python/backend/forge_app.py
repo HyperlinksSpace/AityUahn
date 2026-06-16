@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any
 
@@ -62,6 +63,7 @@ class PromptRequest(BaseModel):
 
 def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> FastAPI:
     engine = forge or LForge()
+    started_at = time.monotonic()
     app = FastAPI(title="AityUahn Forge", version=app_version())
     app.add_middleware(
         CORSMiddleware,
@@ -76,6 +78,7 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
             "ok": True,
             "role": "forge",
             "version": app_version(),
+            "uptime_seconds": round(time.monotonic() - started_at, 1),
             "workspace": str(engine.config.workspace_root),
             "forge_data": str(engine.config.forge_data_dir),
             "default_provider": engine.config.default_provider,

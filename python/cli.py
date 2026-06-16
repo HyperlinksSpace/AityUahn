@@ -278,6 +278,53 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("dashboard")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def dashboard_cmd(forge_url: str, json_out: bool) -> None:
+    """Print kanban summary from a running forge API."""
+    import httpx
+
+    url = forge_url.rstrip("/") + "/api/dashboard"
+    try:
+        r = httpx.get(url, headers={"Accept": "application/json"}, timeout=8.0)
+        r.raise_for_status()
+        data = r.json()
+    except httpx.HTTPError as exc:
+        console.print(f"[red]Could not fetch {url}[/red]: {exc}")
+        console.print("[dim]Start the forge:[/dim] aityuahn serve --demo")
+        raise SystemExit(1) from exc
+
+    if json_out:
+        console.print_json(json.dumps(data, default=str))
+        return
+
+    summary = data.get("summary") or {}
+    console.print(
+        f"[bold]Dashboard[/bold] — {summary.get('projects', 0)} projects, "
+        f"{summary.get('done', 0)}/{summary.get('tasks', 0)} tasks done "
+        f"({summary.get('percent', 0)}%)"
+    )
+    projects = data.get("projects") or []
+    if not projects:
+        console.print("[dim]No projects yet — try aityuahn serve --demo[/dim]")
+        return
+    table = Table(title="Projects")
+    table.add_column("Slug")
+    table.add_column("Name")
+    table.add_column("Progress")
+    table.add_column("In progress")
+    for p in projects:
+        prog = p.get("progress") or {}
+        table.add_row(
+            p.get("slug", "—"),
+            p.get("name", "—"),
+            f"{prog.get('done', 0)}/{prog.get('total', 0)} ({prog.get('percent', 0)}%)",
+            str(prog.get("in_progress", 0)),
+        )
+    console.print(table)
+
+
 @main.command("info")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Forge or SaaS API base URL.")
 @click.option("--json-out", is_flag=True, help="Print raw JSON.")
