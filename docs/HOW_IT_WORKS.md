@@ -119,6 +119,7 @@ File: `python/static/config.json` (copied to `docs/config.json` for Pages).
 | `aityuahn serve-saas` | SaaS only (dev) | 8780 |
 | `aityuahn forge "…"` | One-shot pipeline, no server | — |
 | `aityuahn doctor` | Probe URLs, table output | — |
+| `aityuahn status` | Local config + live API reachability | — |
 | `aityuahn verify` | Probe URLs, pass/fail exit code | — |
 | `aityuahn version` | Print package version | — |
 

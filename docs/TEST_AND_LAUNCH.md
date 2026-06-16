@@ -171,6 +171,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ```bash
 aityuahn serve --demo
+aityuahn serve --demo --open   # also opens controller in browser
+aityuahn status
 ```
 
 Expected console output:

@@ -219,8 +219,9 @@ def prompt_cmd(ctx: click.Context, text: str, provider: str | None, system: str 
     is_flag=True,
     help="Also run SaaS API on this port (dev monolith). Production SaaS is deployed separately.",
 )
+@click.option("--open", "open_browser", is_flag=True, help="Open controller in browser after start.")
 @click.pass_context
-def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: bool) -> None:
+def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: bool, open_browser: bool) -> None:
     """Run local forge API + UI (ideas, backlog, scaffold, agents)."""
     import uvicorn
 
@@ -243,6 +244,19 @@ def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: b
     else:
         console.print("[dim]SaaS[/dim]         off — set defaultSaasApi in UI config for cloud auth")
     console.print(f"[dim]forge data[/dim]  {forge.config.forge_data_dir}")
+    if open_browser:
+        import threading
+        import time
+        import webbrowser
+
+        url = f"http://{host}:{port}/controller.html"
+
+        def _open() -> None:
+            time.sleep(0.8)
+            webbrowser.open(url)
+
+        threading.Thread(target=_open, daemon=True).start()
+        console.print(f"[dim]Browser[/dim]      opening {url}")
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
@@ -262,6 +276,39 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     console.print(f"[dim]health[/dim]       http://{host}:{port}/api/health")
     console.print("[dim]store[/dim]        JSON files until Neon is wired")
     uvicorn.run(app, host=host, port=port, log_level="info")
+
+
+@main.command("status")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+@click.pass_context
+def status_cmd(ctx: click.Context, forge_url: str, saas_url: str | None, json_out: bool) -> None:
+    """Show local forge config and whether APIs are reachable."""
+    from python.status_report import build_status_report
+
+    forge: LForge = ctx.obj["forge"]
+    report = build_status_report(forge, forge_url, saas_url)
+    if json_out:
+        console.print_json(json.dumps(report.to_dict(), default=str))
+        return
+
+    table = Table(title=f"AityUahn status · {report.version}")
+    table.add_column("Item")
+    table.add_column("Value")
+    for row in report.rows:
+        if row.live is True:
+            mark = "[green]●[/green] "
+        elif row.live is False:
+            mark = "[red]●[/red] "
+        else:
+            mark = ""
+        table.add_row(row.key, f"{mark}{row.value}")
+    console.print(table)
+    if report.forge_reachable:
+        console.print("[green]Forge is live[/green] — run [bold]aityuahn open[/bold] or connect in the controller")
+    else:
+        console.print("[yellow]Forge offline[/yellow] — run [bold]aityuahn serve --demo[/bold]")
 
 
 @main.command("version")
