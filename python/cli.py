@@ -278,6 +278,66 @@ def serve_saas_cmd(ctx: click.Context, host: str, port: int) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+@main.command("config")
+@click.pass_context
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def config_cmd(ctx: click.Context, json_out: bool) -> None:
+    """Show resolved forge.yaml paths, providers, and local registry counts."""
+    from python.config import find_forge_config
+    from python.saas.health import app_version
+
+    forge: LForge = ctx.obj["forge"]
+    cfg = forge.config
+    try:
+        config_file = str(find_forge_config())
+    except FileNotFoundError:
+        config_file = "(not found — copy config/forge.example.yaml to forge.yaml)"
+
+    registry = forge.list_all()
+    data = {
+        "version": app_version(),
+        "config_file": config_file,
+        "workspace_root": str(cfg.workspace_root),
+        "forge_data_dir": str(cfg.forge_data_dir),
+        "default_provider": cfg.default_provider,
+        "idea_provider": cfg.idea_provider,
+        "backlog_provider": cfg.backlog_provider,
+        "task_provider": cfg.task_provider,
+        "providers": [
+            {"id": p.id, "kind": p.kind, "enabled": p.enabled, "default": p.default, "model": p.model}
+            for p in cfg.providers
+        ],
+        "registry": {
+            "ideas": len(registry.get("ideas") or []),
+            "backlogs": len(registry.get("backlogs") or []),
+            "projects": len(registry.get("registry") or []),
+        },
+    }
+    if json_out:
+        console.print_json(json.dumps(data, default=str))
+        return
+
+    table = Table(title=f"Forge config · {data['version']}")
+    table.add_column("Setting")
+    table.add_column("Value")
+    table.add_row("config_file", config_file)
+    table.add_row("workspace_root", str(cfg.workspace_root))
+    table.add_row("forge_data_dir", str(cfg.forge_data_dir))
+    table.add_row("default_provider", cfg.default_provider or "—")
+    table.add_row("ideas / backlogs / projects", f"{data['registry']['ideas']} / {data['registry']['backlogs']} / {data['registry']['projects']}")
+    console.print(table)
+    if cfg.providers:
+        pt = Table(title="Providers")
+        pt.add_column("ID")
+        pt.add_column("Kind")
+        pt.add_column("Model")
+        pt.add_column("On")
+        pt.add_column("Default")
+        for p in cfg.providers:
+            pt.add_row(p.id, p.kind, p.model or "—", "yes" if p.enabled else "no", "yes" if p.default else "")
+        console.print(pt)
+
+
 @main.command("ping")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--quiet", "-q", is_flag=True, help="Print one line only (for scripts).")
@@ -314,8 +374,9 @@ def ping_cmd(forge_url: str, quiet: bool) -> None:
 
 @main.command("dashboard")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
-@click.option("--json-out", is_flag=True, help="Print raw JSON.")
-def dashboard_cmd(forge_url: str, json_out: bool) -> None:
+@click.option("-o", "--output", type=click.Path(path_type=Path), default=None, help="Write dashboard JSON to file.")
+@click.option("--json-out", is_flag=True, help="Print raw JSON to stdout.")
+def dashboard_cmd(forge_url: str, output: Path | None, json_out: bool) -> None:
     """Print kanban summary from a running forge API."""
     import httpx
 
@@ -328,6 +389,13 @@ def dashboard_cmd(forge_url: str, json_out: bool) -> None:
         console.print(f"[red]Could not fetch {url}[/red]: {exc}")
         console.print("[dim]Start the forge:[/dim] aityuahn serve --demo")
         raise SystemExit(1) from exc
+
+    if output:
+        output.write_text(json.dumps(data, indent=2, default=str) + "\n", encoding="utf-8")
+        console.print(f"[green]Wrote[/green] {output.resolve()}")
+        if json_out:
+            console.print_json(json.dumps(data, default=str))
+        return
 
     if json_out:
         console.print_json(json.dumps(data, default=str))
