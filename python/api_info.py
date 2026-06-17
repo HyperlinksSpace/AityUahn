@@ -33,6 +33,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
             "status": "Local config + API reachability",
             "verify": "Check forge (and optional cloud) reachability",
             "info": "Fetch this /api/info payload from CLI",
+            "tasks": "List backlog tasks for a project slug",
             "config": "Show resolved forge.yaml and provider settings",
             "dashboard": "Print kanban summary from running forge",
             "ping": "One-line forge health check for scripts",

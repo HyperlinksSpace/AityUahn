@@ -620,13 +620,34 @@ def format_uptime(seconds) {
     return dashboard?.projects?.find((p) => p.slug === selectedSlug) || null;
   }
 
+  function exportDashboardSnapshot() {
+    if (mode !== "live" || !dashboard) {
+      toast("Connect to a live forge to export", true);
+      return;
+    }
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const blob = new Blob([JSON.stringify(dashboard, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `aityuahn-dashboard-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("Dashboard exported");
+  }
+
   function renderSummary() {
     const s = dashboard?.summary || { projects: 0, tasks: 0, done: 0, percent: 0 };
+    const exportBtn =
+      mode === "live"
+        ? `<button type="button" id="btnExportDashboard" class="setup-btn" style="align-self:center">Export snapshot</button>`
+        : "";
     document.getElementById("summaryRow").innerHTML = `
       <div class="stat-card"><span class="muted">Projects</span><strong>${s.projects}</strong></div>
       <div class="stat-card"><span class="muted">Tasks done</span><strong>${s.done}/${s.tasks}</strong></div>
       <div class="stat-card"><span class="muted">Progress</span><strong>${s.percent}%</strong></div>
+      ${exportBtn}
     `;
+    document.getElementById("btnExportDashboard")?.addEventListener("click", exportDashboardSnapshot);
   }
 
   function renderProjectList() {

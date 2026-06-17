@@ -111,6 +111,53 @@ def backlog_cmd(
     console.print(table)
 
 
+@main.command("tasks")
+@click.argument("slug")
+@click.option("--forge-url", default=None, help="Live forge API URL (default: local backlog files).")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+@click.pass_context
+def tasks_cmd(ctx: click.Context, slug: str, forge_url: str | None, json_out: bool) -> None:
+    """List backlog tasks for a project (local files or live API)."""
+    if forge_url:
+        import httpx
+
+        url = forge_url.rstrip("/") + f"/api/backlog/{slug}"
+        try:
+            r = httpx.get(url, headers={"Accept": "application/json"}, timeout=8.0)
+            r.raise_for_status()
+            report = r.json()
+        except httpx.HTTPError as exc:
+            console.print(f"[red]Could not fetch {url}[/red]: {exc}")
+            raise SystemExit(1) from exc
+    else:
+        forge: LForge = ctx.obj["forge"]
+        try:
+            report = forge.backlog.progress_report(slug)
+        except Exception as exc:
+            raise click.ClickException(str(exc)) from exc
+
+    if json_out:
+        console.print_json(json.dumps(report, default=str))
+        return
+
+    prog = report.get("progress") or {}
+    console.print(
+        f"[bold]{slug}[/bold] — {prog.get('done', 0)}/{prog.get('total', 0)} done ({prog.get('percent', 0)}%)"
+    )
+    tasks = report.get("tasks") or []
+    if not tasks:
+        console.print(f"[dim]No tasks — try aityuahn backlog {slug} --generate[/dim]")
+        return
+    table = Table(title=f"Tasks · {slug}")
+    table.add_column("ID")
+    table.add_column("Status")
+    table.add_column("Pri")
+    table.add_column("Title")
+    for t in tasks:
+        table.add_row(t["id"], t["status"], str(t["priority"]), t["title"])
+    console.print(table)
+
+
 @main.command("task")
 @click.argument("slug")
 @click.argument("action", type=click.Choice(["add", "start", "done", "block"]))
