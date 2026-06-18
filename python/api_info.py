@@ -38,6 +38,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
             "dashboard": "Print kanban summary from running forge",
             "ping": "One-line forge health check for scripts",
             "open": "Open controller or guide in browser",
+            "urls": "Print forge UI and API URLs",
         },
     }
 

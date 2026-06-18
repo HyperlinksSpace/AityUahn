@@ -285,7 +285,7 @@ def serve_cmd(ctx: click.Context, host: str, port: int, demo: bool, with_saas: b
     console.print(f"[dim]Controller[/dim]  http://{host}:{port}/controller.html")
     console.print(f"[dim]Guide[/dim]       http://{host}:{port}/guide.html")
     console.print(f"[dim]Forge API[/dim]    http://{host}:{port}/api/health")
-    console.print(f"[dim]Open UI[/dim]       aityuahn open")
+    console.print(f"[dim]All URLs[/dim]      aityuahn urls --port {port}")
     if with_saas:
         console.print(f"[dim]SaaS API[/dim]     http://{host}:{port}/api/saas/pricing")
     else:
@@ -541,6 +541,41 @@ def status_cmd(ctx: click.Context, forge_url: str, saas_url: str | None, json_ou
         console.print("[green]Forge is live[/green] — run [bold]aityuahn open[/bold] or connect in the controller")
     else:
         console.print("[yellow]Forge offline[/yellow] — run [bold]aityuahn serve --demo[/bold]")
+
+
+@main.command("urls")
+@click.option("--host", default="127.0.0.1", show_default=True, help="Forge bind host.")
+@click.option("--port", default=8765, type=int, show_default=True, help="Forge bind port.")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+def urls_cmd(host: str, port: int, json_out: bool) -> None:
+    """Print local forge UI and API URLs (for bookmarks and config)."""
+    from python.saas.health import app_version
+
+    base = f"http://{host}:{port}"
+    links = {
+        "base": base,
+        "landing": f"{base}/",
+        "controller": f"{base}/controller.html",
+        "guide": f"{base}/guide.html",
+        "docs": f"{base}/docs.html",
+        "health": f"{base}/api/health",
+        "info": f"{base}/api/info",
+        "dashboard": f"{base}/api/dashboard",
+        "openapi": f"{base}/docs",
+    }
+    if json_out:
+        console.print_json(json.dumps({"version": app_version(), **links}, default=str))
+        return
+
+    table = Table(title=f"Forge URLs · {app_version()}")
+    table.add_column("Page")
+    table.add_column("URL")
+    for name, url in links.items():
+        if name == "base":
+            continue
+        table.add_row(name, url)
+    console.print(table)
+    console.print("[dim]Quick start:[/dim] aityuahn serve --demo --open")
 
 
 @main.command("version")

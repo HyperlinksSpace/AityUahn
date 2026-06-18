@@ -882,6 +882,15 @@ def format_uptime(seconds) {
     };
 
     document.getElementById("btnConnect").onclick = () => doConnect();
+    document.getElementById("btnCopyForgeUrl")?.addEventListener("click", async () => {
+      const value = (document.getElementById("apiBaseInput")?.value || "http://127.0.0.1:8765").trim();
+      try {
+        await navigator.clipboard.writeText(value);
+        toast("Forge URL copied");
+      } catch {
+        toast("Could not copy URL", true);
+      }
+    });
     document.getElementById("statusPill")?.addEventListener("click", async () => {
       if (mode === "live") {
         await refreshLiveHealth();
@@ -1161,6 +1170,17 @@ def format_uptime(seconds) {
       startTeamPayment();
     }
     setView("kanban");
+
+    document.addEventListener("keydown", async (ev) => {
+      if (ev.target && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.target.tagName)) return;
+      if (ev.key === "r" || ev.key === "R") {
+        if (mode === "live") {
+          await refresh();
+          await refreshLiveHealth();
+          toast("Dashboard refreshed");
+        }
+      }
+    });
   }
 
   init();
