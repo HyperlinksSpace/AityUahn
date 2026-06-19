@@ -652,6 +652,25 @@ def open_cmd(page: str, host: str, port: int) -> None:
     webbrowser.open(url)
 
 
+@main.command("wait")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
+@click.option("--timeout", default=60.0, type=float, show_default=True, help="Seconds to wait before failing.")
+@click.option("--interval", default=2.0, type=float, show_default=True, help="Seconds between attempts.")
+def wait_cmd(forge_url: str, saas_url: str | None, timeout: float, interval: float) -> None:
+    """Wait until forge (and optional SaaS) respond to /api/health."""
+    from python.wait_for import wait_for_services
+
+    console.print(f"[dim]Waiting for forge at[/dim] {forge_url.rstrip('/')}/api/health …")
+    if saas_url:
+        console.print(f"[dim]Also waiting for SaaS at[/dim] {saas_url.rstrip('/')}/api/health …")
+    if wait_for_services(forge_url, saas_url, timeout=timeout, interval=interval):
+        console.print("[green]Forge is ready[/green]")
+        return
+    console.print(f"[red]Timed out after {timeout:.0f}s[/red] — is `aityuahn serve --demo` running?")
+    raise SystemExit(1)
+
+
 @main.command("verify")
 @click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
 @click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")

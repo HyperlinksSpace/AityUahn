@@ -1180,6 +1180,9 @@ def format_uptime(seconds) {
           toast("Dashboard refreshed");
         }
       }
+      if (ev.key === "?") {
+        toast("Shortcuts: R = refresh · status pill = health · Copy URL = forge link");
+      }
     });
   }
 

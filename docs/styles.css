@@ -330,6 +330,13 @@ a.setup-btn.primary {
   line-height: 1.4;
 }
 .connect-hint a { color: var(--accent); }
+.connect-hint kbd {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
 .docs-actions {
   list-style: none;
   padding: 0;

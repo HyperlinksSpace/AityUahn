@@ -39,6 +39,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
             "ping": "One-line forge health check for scripts",
             "open": "Open controller or guide in browser",
             "urls": "Print forge UI and API URLs",
+            "wait": "Block until forge (and optional SaaS) is reachable",
         },
     }
 
