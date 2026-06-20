@@ -34,6 +34,7 @@
   }
 
   async function closeSetupOverlay() {
+    dismissSetupOverlay();
     if (isDemoUrl() && mode !== "static" && mode !== "live") {
       try {
         await connectDemo();
@@ -43,25 +44,39 @@
         toast(String(e.message || e), true);
       }
     }
-    dismissSetupOverlay();
   }
 
   function dismissSetupOverlay() {
     overlayDismissed = true;
     const overlay = document.getElementById("blockedOverlay");
-    overlay?.classList.add("hidden");
-    overlay?.setAttribute("aria-hidden", "true");
+    if (overlay) {
+      overlay.classList.add("hidden");
+      overlay.hidden = true;
+      overlay.style.display = "none";
+      overlay.setAttribute("aria-hidden", "true");
+    }
     document.body.style.overflow = "";
+    document.body.classList.remove("setup-overlay-open");
   }
 
-  function showSetupOverlay() {
+  function showSetupOverlay(force = false) {
+    if (overlayDismissed && !force) return;
     overlayDismissed = false;
     const overlay = document.getElementById("blockedOverlay");
-    overlay?.classList.remove("hidden");
-    overlay?.setAttribute("aria-hidden", "false");
+    if (overlay) {
+      overlay.classList.remove("hidden");
+      overlay.hidden = false;
+      overlay.style.display = "";
+      overlay.setAttribute("aria-hidden", "false");
+    }
     document.body.style.overflow = "hidden";
+    document.body.classList.add("setup-overlay-open");
     refreshSetupOverlayContext();
   }
+
+  window.AityCloseSetup = () => {
+    void closeSetupOverlay();
+  };
 
   function authHeaders() {
     const h = {};
@@ -139,7 +154,7 @@
   function openAuthDialog(nextMode = "login", payload = null) {
     if (mode !== "live") {
       toast("Connect your backend first (see setup steps)", true);
-      showSetupOverlay();
+      showSetupOverlay(true);
       return;
     }
     authMode = nextMode;
@@ -398,12 +413,9 @@
     pill.title = next === "live" ? "Click to refresh health" : next === "offline" ? "Click to reconnect" : "";
     const connectBtn = document.getElementById("btnConnect");
     if (connectBtn) connectBtn.textContent = next === "offline" ? "Reconnect" : "Connect";
-    const hideOverlay = next === "live" || next === "static" || overlayDismissed;
-    const overlay = document.getElementById("blockedOverlay");
-    overlay?.classList.toggle("hidden", hideOverlay);
-    overlay?.setAttribute("aria-hidden", hideOverlay ? "true" : "false");
-    document.body.style.overflow = hideOverlay ? "" : "hidden";
-    if (!hideOverlay) refreshSetupOverlayContext();
+    if (next === "live" || next === "static" || overlayDismissed) {
+      dismissSetupOverlay();
+    }
     if (next === "offline") startReconnectPoll();
     else stopReconnectPoll();
     if (next === "live") startLiveHealthPoll();
@@ -606,6 +618,7 @@
       location.hostname.endsWith("github.io");
     if (hosted || skipDemo) {
       setMode("offline");
+      if (!overlayDismissed) showSetupOverlay();
       await refreshSaasStatus();
       return;
     }
@@ -971,12 +984,24 @@
     document.getElementById("btnDemoMode").onclick = goDemo;
     document.getElementById("btnOverlayDemo").onclick = goDemo;
 
-    document.getElementById("btnOverlayClose")?.addEventListener("click", () => closeSetupOverlay());
-    document.getElementById("btnOverlayCloseFooter")?.addEventListener("click", () => closeSetupOverlay());
+    document.getElementById("btnOverlayClose")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      void closeSetupOverlay();
+    });
+    document.getElementById("btnOverlayCloseFooter")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      void closeSetupOverlay();
+    });
+
+    document.querySelector("#blockedOverlay .blocked-card")?.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+    });
 
     document.getElementById("blockedOverlay")?.addEventListener("click", (ev) => {
       if (ev.target.id !== "blockedOverlay") return;
-      closeSetupOverlay();
+      void closeSetupOverlay();
     });
 
     document.addEventListener("keydown", (ev) => {

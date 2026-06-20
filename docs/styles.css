@@ -322,11 +322,11 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
 .setup-card-wide { max-width: 580px; }
 .setup-card-header {
   flex-shrink: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
   gap: 0.75rem;
-  padding: 1rem 1.15rem 0.75rem;
+  padding: 1rem 1.25rem 0.85rem;
   border-bottom: 1px solid var(--border);
   background: var(--panel);
 }
@@ -334,19 +334,19 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.35;
-  padding-right: 0.25rem;
+  font-weight: 600;
 }
 .setup-card-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.85rem 1.15rem 1rem;
+  padding: 1rem 1.25rem;
   -webkit-overflow-scrolling: touch;
 }
 .setup-card-footer {
   flex-shrink: 0;
-  padding: 0.85rem 1.15rem 1rem;
+  padding: 1rem 1.25rem 1.1rem;
   border-top: 1px solid var(--border);
   background: var(--panel-2);
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
@@ -371,6 +371,12 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   cursor: pointer;
 }
 .setup-close:hover { border-color: var(--accent); color: #fff; background: var(--accent); }
+.blocked-overlay:not(.hidden) {
+  display: flex !important;
+}
+.blocked-overlay.hidden {
+  display: none !important;
+}
 .blocked-overlay:not(.hidden) .setup-close,
 .blocked-overlay:not(.hidden) #btnOverlayCloseFooter {
   display: inline-flex;
