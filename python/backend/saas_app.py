@@ -40,6 +40,15 @@ def create_saas_app(forge: LForge | None = None) -> FastAPI:
     def health() -> dict[str, Any]:
         return saas_health(serverless=serverless)
 
+    @app.get("/api/ready")
+    def ready() -> dict[str, Any]:
+        health = saas_health(serverless=serverless)
+        return {
+            "ready": health.get("ok") is True,
+            "role": "saas",
+            "version": app_version(),
+        }
+
     @app.get("/api/info")
     def info() -> dict[str, Any]:
         return saas_info(serverless=serverless)

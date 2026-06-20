@@ -578,6 +578,43 @@ def urls_cmd(host: str, port: int, json_out: bool) -> None:
     console.print("[dim]Quick start:[/dim] aityuahn serve --demo --open")
 
 
+@main.command("checkup")
+@click.option("--forge-url", default="http://127.0.0.1:8765", show_default=True, help="Local forge API base URL.")
+@click.option("--saas-url", default=None, help="Cloud SaaS API base URL (optional).")
+@click.option("--json-out", is_flag=True, help="Print raw JSON.")
+@click.pass_context
+def checkup_cmd(ctx: click.Context, forge_url: str, saas_url: str | None, json_out: bool) -> None:
+    """Run local config and live API diagnostics in one pass."""
+    from python.checkup import run_checkup
+
+    forge: LForge = ctx.obj["forge"]
+    report = run_checkup(forge, forge_url, saas_url)
+    if json_out:
+        console.print_json(json.dumps(report.to_dict(), default=str))
+        if not report.ok:
+            raise SystemExit(1)
+        return
+
+    console.print(f"[bold]AityUahn checkup[/bold] · {report.version}")
+    local = report.local
+    console.print(f"  workspace:   {local['rows'][0]['value'] if local.get('rows') else '—'}")
+    for row in local.get("rows") or []:
+        if row["key"] in ("forge_data", "default_provider", "providers"):
+            console.print(f"  {row['key']}: {row['value']}")
+    for check in report.checks:
+        mark = "[green]✓[/green]" if check["ok"] else "[red]✗[/red]"
+        console.print(f"  {mark} {check['name']}: {check['detail']}")
+    if report.hints:
+        console.print("[dim]Hints:[/dim]")
+        for hint in report.hints:
+            console.print(f"  • {hint}")
+    if report.ok:
+        console.print("[green]Checkup passed[/green]")
+    else:
+        console.print("[red]Checkup failed[/red]")
+        raise SystemExit(1)
+
+
 @main.command("version")
 def version_cmd() -> None:
     """Print installed package version."""

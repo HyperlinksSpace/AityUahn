@@ -41,6 +41,12 @@ def test_health_and_ui(tmp_path: Path):
     assert "uptime_seconds" in body
     assert body["uptime_seconds"] >= 0
 
+    r = client.get("/api/ready")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ready"] is True
+    assert body["role"] == "forge"
+
     r = client.get("/")
     assert r.status_code == 200
     assert "agentic" in r.text.lower() or "forge" in r.text.lower()

@@ -84,6 +84,10 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
             "default_provider": engine.config.default_provider,
         }
 
+    @app.get("/api/ready")
+    def ready() -> dict[str, Any]:
+        return {"ready": True, "role": "forge", "version": app_version()}
+
     @app.get("/api/info")
     def info() -> dict[str, Any]:
         return forge_info(engine)

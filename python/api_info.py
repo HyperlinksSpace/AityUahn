@@ -19,6 +19,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
         "providers_enabled": [p.id for p in engine.config.providers if p.enabled],
         "links": {
             "health": "/api/health",
+            "ready": "/api/ready",
             "info": "/api/info",
             "dashboard": "/api/dashboard",
             "landing": "/",
@@ -40,6 +41,7 @@ def forge_info(engine: LForge) -> dict[str, Any]:
             "open": "Open controller or guide in browser",
             "urls": "Print forge UI and API URLs",
             "wait": "Block until forge (and optional SaaS) is reachable",
+            "checkup": "One-shot local config + live API diagnostics",
         },
     }
 
@@ -55,6 +57,7 @@ def saas_info(*, serverless: bool) -> dict[str, Any]:
         "jwt_configured": jwt_configured(),
         "links": {
             "health": "/api/health",
+            "ready": "/api/ready",
             "info": "/api/info",
             "pricing": "/api/saas/pricing",
             "register": "/api/saas/auth/register",
