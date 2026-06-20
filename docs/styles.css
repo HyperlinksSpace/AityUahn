@@ -12,6 +12,7 @@
   --danger: #ef4444;
   --radius: 10px;
 }
+.hidden { display: none !important; }
 body {
   margin: 0;
   font-family: "Segoe UI", system-ui, sans-serif;
@@ -311,24 +312,44 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   width: 100%;
   display: flex;
   flex-direction: column;
-  max-height: min(92vh, 880px);
+  height: min(88vh, 720px);
+  max-height: min(88vh, 720px);
   overflow: hidden;
   padding: 0;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
 }
 .setup-card { max-width: 520px; }
-.setup-card-wide { max-width: 560px; }
+.setup-card-wide { max-width: 580px; }
+.setup-card-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+.setup-card-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  padding-right: 0.25rem;
+}
 .setup-card-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 1.25rem 2.75rem 0.75rem 1.25rem;
+  overscroll-behavior: contain;
+  padding: 0.85rem 1.15rem 1rem;
   -webkit-overflow-scrolling: touch;
 }
 .setup-card-footer {
   flex-shrink: 0;
-  padding: 0.85rem 1.25rem 1.15rem;
+  padding: 0.85rem 1.15rem 1rem;
   border-top: 1px solid var(--border);
-  background: var(--panel);
+  background: var(--panel-2);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
 }
 .setup-footer-actions {
   display: flex;
@@ -337,22 +358,25 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   margin-top: 0.65rem;
 }
 .setup-close {
-  position: absolute;
-  top: 0.55rem;
-  right: 0.55rem;
-  z-index: 2;
-  width: 2rem;
-  height: 2rem;
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
   padding: 0;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--muted);
-  font-size: 1.25rem;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
 }
-.setup-close:hover { color: var(--text); border-color: var(--accent); }
+.setup-close:hover { border-color: var(--accent); color: #fff; background: var(--accent); }
+.blocked-overlay:not(.hidden) .setup-close,
+.blocked-overlay:not(.hidden) #btnOverlayCloseFooter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .ton-payment {
   margin-top: 0.75rem;

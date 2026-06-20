@@ -50,10 +50,12 @@
   </div>
 
   <div id="blockedOverlay" class="blocked-overlay hidden">
-    <div class="blocked-card setup-card setup-card-wide">
-      <button type="button" id="btnOverlayClose" class="setup-close hidden" aria-label="Close setup dialog">×</button>
+    <div class="blocked-card setup-card setup-card-wide" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+      <header class="setup-card-header">
+        <h2 id="setupTitle">First run — download &amp; start the backend</h2>
+        <button type="button" id="btnOverlayClose" class="setup-close" aria-label="Close setup dialog">×</button>
+      </header>
       <div class="setup-card-scroll">
-        <h2 id="setupTitle" style="margin-top:0">First run — download &amp; start the backend</h2>
         <p id="setupLead" class="muted">The controller UI can run on GitHub Pages, but forge, agents, and accounts need the Python API (<code>aityuahn serve</code>) on your machine or a deployed host.</p>
         <div class="setup-actions">
           <a id="overlayBackendExe" class="primary setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Download Windows installer (.exe)</a>
@@ -92,6 +94,7 @@
         <div class="setup-footer-actions">
           <button type="button" id="btnOverlayConnect" class="primary">Connect</button>
           <button type="button" id="btnOverlayDemo">Try offline demo</button>
+          <button type="button" id="btnOverlayCloseFooter" class="setup-btn">Close</button>
           <button type="button" id="btnOverlaySignIn">Sign in / Register</button>
         </div>
         <p id="setupNote" class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account. See <a href="docs.html#test-ui">docs</a> for a full UI test checklist.</p>

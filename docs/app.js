@@ -33,16 +33,34 @@
     return new URLSearchParams(location.search).get("demo") === "1";
   }
 
-  function updateOverlayCloseButton() {
-    const btn = document.getElementById("btnOverlayClose");
-    if (!btn) return;
-    const show = isDemoUrl() || mode === "static" || (mode === "offline" && window.AityAuth?.isHostedUi?.());
-    btn.classList.toggle("hidden", !show);
+  async function closeSetupOverlay() {
+    if (isDemoUrl() && mode !== "static" && mode !== "live") {
+      try {
+        await connectDemo();
+        await loadProviders();
+        await refresh();
+      } catch (e) {
+        toast(String(e.message || e), true);
+      }
+    }
+    dismissSetupOverlay();
   }
 
   function dismissSetupOverlay() {
     overlayDismissed = true;
-    document.getElementById("blockedOverlay")?.classList.add("hidden");
+    const overlay = document.getElementById("blockedOverlay");
+    overlay?.classList.add("hidden");
+    overlay?.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  function showSetupOverlay() {
+    overlayDismissed = false;
+    const overlay = document.getElementById("blockedOverlay");
+    overlay?.classList.remove("hidden");
+    overlay?.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    refreshSetupOverlayContext();
   }
 
   function authHeaders() {
@@ -121,7 +139,7 @@
   function openAuthDialog(nextMode = "login", payload = null) {
     if (mode !== "live") {
       toast("Connect your backend first (see setup steps)", true);
-      document.getElementById("blockedOverlay")?.classList.remove("hidden");
+      showSetupOverlay();
       return;
     }
     authMode = nextMode;
@@ -381,9 +399,11 @@
     const connectBtn = document.getElementById("btnConnect");
     if (connectBtn) connectBtn.textContent = next === "offline" ? "Reconnect" : "Connect";
     const hideOverlay = next === "live" || next === "static" || overlayDismissed;
-    document.getElementById("blockedOverlay").classList.toggle("hidden", hideOverlay);
+    const overlay = document.getElementById("blockedOverlay");
+    overlay?.classList.toggle("hidden", hideOverlay);
+    overlay?.setAttribute("aria-hidden", hideOverlay ? "true" : "false");
+    document.body.style.overflow = hideOverlay ? "" : "hidden";
     if (!hideOverlay) refreshSetupOverlayContext();
-    updateOverlayCloseButton();
     if (next === "offline") startReconnectPoll();
     else stopReconnectPoll();
     if (next === "live") startLiveHealthPoll();
@@ -551,6 +571,20 @@
 
     const authPending = hasAuthIntent();
     const skipDemo = authPending || (needsBackendBeforeUse() && !isDemoUrl());
+
+    if (isDemoUrl() && !authPending) {
+      try {
+        await connectDemo();
+        await loadProviders();
+        await refresh();
+        return;
+      } catch (e) {
+        toast(`Demo load failed: ${e.message}`, true);
+        setMode("offline");
+        showSetupOverlay();
+        return;
+      }
+    }
 
     if (preferDemo && !skipDemo) {
       await connectDemo();
@@ -937,19 +971,19 @@
     document.getElementById("btnDemoMode").onclick = goDemo;
     document.getElementById("btnOverlayDemo").onclick = goDemo;
 
-    document.getElementById("btnOverlayClose")?.addEventListener("click", async () => {
-      if (mode !== "static" && mode !== "live" && isDemoUrl()) {
-        await goDemo();
-        return;
-      }
-      if (mode === "static" || isDemoUrl()) {
-        dismissSetupOverlay();
-      }
-    });
+    document.getElementById("btnOverlayClose")?.addEventListener("click", () => closeSetupOverlay());
+    document.getElementById("btnOverlayCloseFooter")?.addEventListener("click", () => closeSetupOverlay());
 
     document.getElementById("blockedOverlay")?.addEventListener("click", (ev) => {
       if (ev.target.id !== "blockedOverlay") return;
-      if (mode === "static" || isDemoUrl()) dismissSetupOverlay();
+      closeSetupOverlay();
+    });
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Escape") return;
+      const overlay = document.getElementById("blockedOverlay");
+      if (overlay?.classList.contains("hidden")) return;
+      closeSetupOverlay();
     });
     document.getElementById("btnOverlaySignIn")?.addEventListener("click", () => openAuthDialog("login"));
     document.getElementById("btnSignIn")?.addEventListener("click", () => openAuthDialog("login"));
@@ -1191,10 +1225,9 @@
     const demoParam = isDemoUrl();
     await resolveBackend(demoParam && !hasAuthIntent());
     await refreshSaasStatus();
-    updateOverlayCloseButton();
     if (mode === "offline" && hasAuthIntent()) {
       refreshSetupOverlayContext();
-      document.getElementById("blockedOverlay")?.classList.remove("hidden");
+      showSetupOverlay();
     }
     await loadProviders();
     const billing = await loadBillingSettings();
