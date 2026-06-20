@@ -49,11 +49,11 @@ code {
 }
 .site-logo {
   display: block;
-  height: 28px;
+  height: 40px;
   width: auto;
-  max-width: min(200px, 50vw);
+  max-width: min(280px, 65vw);
 }
-.site-logo--footer { height: 24px; margin-bottom: 0.35rem; }
+.site-logo--footer { height: 28px; margin-bottom: 0.35rem; }
 .lp-nav-toggle {
   display: none;
   border: 1px solid var(--border);
