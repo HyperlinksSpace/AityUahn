@@ -27,6 +27,23 @@
   let tonPollTimer = null;
   let activeTonPaymentId = null;
   let authMode = null;
+  let overlayDismissed = false;
+
+  function isDemoUrl() {
+    return new URLSearchParams(location.search).get("demo") === "1";
+  }
+
+  function updateOverlayCloseButton() {
+    const btn = document.getElementById("btnOverlayClose");
+    if (!btn) return;
+    const show = isDemoUrl() || mode === "static" || (mode === "offline" && window.AityAuth?.isHostedUi?.());
+    btn.classList.toggle("hidden", !show);
+  }
+
+  function dismissSetupOverlay() {
+    overlayDismissed = true;
+    document.getElementById("blockedOverlay")?.classList.add("hidden");
+  }
 
   function authHeaders() {
     const h = {};
@@ -346,7 +363,7 @@
     return "";
   }
 
-def format_uptime(seconds) {
+  function formatUptime(seconds) {
     if (seconds == null || Number.isNaN(Number(seconds))) return "";
     const s = Number(seconds);
     if (s < 60) return `up ${Math.round(s)}s`;
@@ -363,9 +380,10 @@ def format_uptime(seconds) {
     pill.title = next === "live" ? "Click to refresh health" : next === "offline" ? "Click to reconnect" : "";
     const connectBtn = document.getElementById("btnConnect");
     if (connectBtn) connectBtn.textContent = next === "offline" ? "Reconnect" : "Connect";
-    const hideOverlay = next === "live" || (next === "static" && !needsBackendBeforeUse());
+    const hideOverlay = next === "live" || next === "static" || overlayDismissed;
     document.getElementById("blockedOverlay").classList.toggle("hidden", hideOverlay);
     if (!hideOverlay) refreshSetupOverlayContext();
+    updateOverlayCloseButton();
     if (next === "offline") startReconnectPoll();
     else stopReconnectPoll();
     if (next === "live") startLiveHealthPoll();
@@ -532,10 +550,12 @@ def format_uptime(seconds) {
     if (overlayInput) overlayInput.value = apiBase || localDefault;
 
     const authPending = hasAuthIntent();
-    const skipDemo = authPending || needsBackendBeforeUse();
+    const skipDemo = authPending || (needsBackendBeforeUse() && !isDemoUrl());
 
     if (preferDemo && !skipDemo) {
       await connectDemo();
+      await loadProviders();
+      await refresh();
       return;
     }
     if (apiBase) {
@@ -547,7 +567,10 @@ def format_uptime(seconds) {
         toast(`API unreachable: ${e.message}`, true);
       }
     }
-    if (location.hostname.endsWith("github.io") || skipDemo) {
+    const hosted =
+      (window.AityAuth?.isHostedUi && AityAuth.isHostedUi()) ||
+      location.hostname.endsWith("github.io");
+    if (hosted || skipDemo) {
       setMode("offline");
       await refreshSaasStatus();
       return;
@@ -905,6 +928,7 @@ def format_uptime(seconds) {
       doConnect(document.getElementById("overlayApiInput") || document.getElementById("apiBaseInput"));
 
     const goDemo = async () => {
+      overlayDismissed = false;
       await connectDemo();
       await loadProviders();
       await refresh();
@@ -912,6 +936,21 @@ def format_uptime(seconds) {
     };
     document.getElementById("btnDemoMode").onclick = goDemo;
     document.getElementById("btnOverlayDemo").onclick = goDemo;
+
+    document.getElementById("btnOverlayClose")?.addEventListener("click", async () => {
+      if (mode !== "static" && mode !== "live" && isDemoUrl()) {
+        await goDemo();
+        return;
+      }
+      if (mode === "static" || isDemoUrl()) {
+        dismissSetupOverlay();
+      }
+    });
+
+    document.getElementById("blockedOverlay")?.addEventListener("click", (ev) => {
+      if (ev.target.id !== "blockedOverlay") return;
+      if (mode === "static" || isDemoUrl()) dismissSetupOverlay();
+    });
     document.getElementById("btnOverlaySignIn")?.addEventListener("click", () => openAuthDialog("login"));
     document.getElementById("btnSignIn")?.addEventListener("click", () => openAuthDialog("login"));
 
@@ -995,7 +1034,7 @@ def format_uptime(seconds) {
         showOutput("outIdea", String(e));
         toast(String(e), true);
       }
-    };
+    });
 
     document.getElementById("btnBacklogRefresh").onclick = async () => {
       if (!selectedSlug) return toast("Select a project", true);
@@ -1149,9 +1188,10 @@ def format_uptime(seconds) {
 
     updateAuthUI();
     await AitySetup.initSetupUi(AitySetup.IDS, (msg, err) => toast(msg, err));
-    const demoParam = new URLSearchParams(location.search).get("demo") === "1";
-    await resolveBackend(demoParam && !hasAuthIntent() && !currentUser());
+    const demoParam = isDemoUrl();
+    await resolveBackend(demoParam && !hasAuthIntent());
     await refreshSaasStatus();
+    updateOverlayCloseButton();
     if (mode === "offline" && hasAuthIntent()) {
       refreshSetupOverlayContext();
       document.getElementById("blockedOverlay")?.classList.remove("hidden");
