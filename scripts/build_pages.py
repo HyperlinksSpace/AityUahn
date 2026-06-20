@@ -37,7 +37,7 @@ def build_pages() -> None:
         dst = DOCS / ("index.html" if name == "landing.html" else name)
         dst.write_text(_patch_html((STATIC / name).read_text(encoding="utf-8")), encoding="utf-8")
 
-    for name in ("app.js", "auth.js", "landing.js", "setup.js", "styles.css", "landing.css"):
+    for name in ("app.js", "auth.js", "landing.js", "setup.js", "styles.css", "landing.css", "logo.svg"):
         src = STATIC / name
         if src.is_file():
             shutil.copy2(src, DOCS / name)

@@ -1,6 +1,6 @@
 <div align="center">
 
-# AityUahn
+<img src="python/static/logo.svg" alt="AityUahn" width="260" />
 
 ### A configurable forge for ideating, scaffolding, and developing projects
 

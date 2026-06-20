@@ -212,6 +212,14 @@ def create_forge_app(forge: LForge | None = None, *, serve_ui: bool = True) -> F
         def guide_html() -> FileResponse:
             return FileResponse(STATIC_DIR / "guide.html")
 
+        @app.get("/favicon.ico")
+        def favicon() -> FileResponse:
+            return FileResponse(STATIC_DIR / "logo.svg", media_type="image/svg+xml")
+
+        @app.get("/logo.svg")
+        def logo_svg() -> FileResponse:
+            return FileResponse(STATIC_DIR / "logo.svg", media_type="image/svg+xml")
+
         @app.get("/")
         def ui() -> FileResponse:
             landing = STATIC_DIR / "landing.html"

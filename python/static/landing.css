@@ -40,7 +40,20 @@ code {
   background: rgba(7, 11, 18, 0.92);
   backdrop-filter: blur(8px);
 }
-.lp-logo { color: var(--text); font-weight: 700; text-decoration: none; font-size: 1.1rem; flex-shrink: 0; }
+.lp-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  line-height: 0;
+}
+.site-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: min(200px, 50vw);
+}
+.site-logo--footer { height: 24px; margin-bottom: 0.35rem; }
 .lp-nav-toggle {
   display: none;
   border: 1px solid var(--border);
@@ -317,7 +330,7 @@ code {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1.5rem;
 }
-.lp-footer-brand { color: var(--text); font-weight: 700; margin: 0 0 0.35rem; }
+.lp-footer-brand { margin: 0 0 0.35rem; line-height: 0; }
 .lp-footer-tagline { margin: 0; font-size: 0.88rem; line-height: 1.5; max-width: 260px; }
 .lp-footer-heading { color: var(--text); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.5rem; }
 .lp-footer-grid a {

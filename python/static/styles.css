@@ -67,6 +67,34 @@ label { display: block; font-size: 0.82rem; color: var(--muted); margin: 0.5rem 
   background: var(--panel);
 }
 .app-header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+.app-header-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.85rem;
+}
+.app-logo-link {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+}
+.app-header-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.site-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: min(200px, 50vw);
+}
+.app-header-brand .header-nav {
+  flex-basis: 100%;
+  margin-top: 0;
+}
 .header-nav { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
 .header-nav a {
   color: var(--muted);

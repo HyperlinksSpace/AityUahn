@@ -47,6 +47,14 @@ def test_health_and_ui(tmp_path: Path):
     assert body["ready"] is True
     assert body["role"] == "forge"
 
+    r = client.get("/favicon.ico")
+    assert r.status_code == 200
+    assert "image/svg" in r.headers.get("content-type", "")
+
+    r = client.get("/logo.svg")
+    assert r.status_code == 200
+    assert r.content[:4] == b"<svg"
+
     r = client.get("/")
     assert r.status_code == 200
     assert "agentic" in r.text.lower() or "forge" in r.text.lower()
