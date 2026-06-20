@@ -65,8 +65,8 @@ code {
   cursor: pointer;
 }
 .lp-nav { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-.lp-nav a { color: var(--muted); text-decoration: none; font-size: 0.92rem; }
-.lp-nav a:hover { color: var(--text); }
+.lp-nav a:not(.lp-btn) { color: var(--muted); text-decoration: none; font-size: 0.92rem; }
+.lp-nav a:not(.lp-btn):hover { color: var(--text); }
 
 /* Buttons */
 .lp-btn {
@@ -81,9 +81,25 @@ code {
   text-decoration: none;
   cursor: pointer;
   font: inherit;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
 }
-.lp-btn.primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border-color: transparent; }
-.lp-btn.ghost { background: transparent; }
+.lp-btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  border-color: transparent;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+.lp-btn.primary:hover {
+  color: #fff;
+  filter: brightness(1.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 6px 18px rgba(99, 102, 241, 0.5);
+}
+.lp-nav .lp-btn.primary {
+  color: #fff;
+}
+.lp-btn.ghost { background: transparent; color: var(--text); font-weight: 500; }
+.lp-btn.ghost:hover { border-color: var(--accent); color: var(--text); }
 .lp-btn.lg { padding: 0.7rem 1.2rem; }
 
 /* Hero */
