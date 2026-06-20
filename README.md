@@ -116,7 +116,7 @@ The **same controller** as `aityuahn serve` — kanban board, task list, forge p
 
 1. **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from branch / root” — that renders `README.md` as plain text)
 2. Push to `main` (workflow `.github/workflows/pages.yml` publishes `docs/`)
-3. Open **https://hyperlinksspace.github.io/AityUahn/**
+3. Open **https://aityuahn.hyperlinks.space/** (custom domain) or **https://hyperlinksspace.github.io/AityUahn/** (project URL — relative asset paths work on both)
 4. Run `aityuahn serve` and connect **`http://127.0.0.1:8765`** (use a tunnel to reach localhost from the browser)
 
 **Hard refresh** if you still see the old README page: **Ctrl+Shift+R** (Windows/Linux) or **Cmd+Shift+R** (Mac).

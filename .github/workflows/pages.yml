@@ -28,6 +28,8 @@ jobs:
           python-version: "3.11"
 
       - name: Build static site
+        env:
+          AITYUAHN_PAGES_DOMAIN: aityuahn.hyperlinks.space
         run: |
           pip install -e .
           python scripts/build_pages.py

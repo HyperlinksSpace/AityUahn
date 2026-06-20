@@ -14,12 +14,18 @@ from python.demo import demo_dashboard_payload
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = ROOT / "python" / "static"
 DOCS = ROOT / "docs"
-PAGES_BASE = os.environ.get("GITHUB_PAGES_BASE", "/AityUahn/")
+# Empty = relative asset paths (works on custom domain and github.io/Repo/).
+# Set GITHUB_PAGES_BASE=/AityUahn/ only for legacy absolute subpath builds.
+PAGES_BASE = os.environ.get("GITHUB_PAGES_BASE", "")
+PAGES_CUSTOM_DOMAIN = os.environ.get("AITYUAHN_PAGES_DOMAIN", "aityuahn.hyperlinks.space")
 
 
 def _patch_html(html: str) -> str:
-    base = PAGES_BASE if PAGES_BASE.endswith("/") else f"{PAGES_BASE}/"
+    """Strip forge /static/ prefix; use relative URLs so custom domains at / work."""
     html = html.replace("/static/", "")
+    if not PAGES_BASE or PAGES_BASE in ("/", "./"):
+        return html
+    base = PAGES_BASE if PAGES_BASE.endswith("/") else f"{PAGES_BASE}/"
     if "<base " not in html:
         html = html.replace("<head>", f'<head>\n  <base href="{base}">', 1)
     html = re.sub(r'href="(?!https?://|#|/)([^"]+)"', rf'href="{base}\1"', html)
@@ -30,7 +36,9 @@ def _patch_html(html: str) -> str:
 def build_pages() -> None:
     DOCS.mkdir(parents=True, exist_ok=True)
     config = json.loads((STATIC / "config.json").read_text(encoding="utf-8"))
-    config["pagesBase"] = PAGES_BASE
+    config["pagesBase"] = PAGES_BASE or "/"
+    if PAGES_CUSTOM_DOMAIN:
+        config["siteUrl"] = f"https://{PAGES_CUSTOM_DOMAIN.strip()}"
     (DOCS / "config.json").write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
     for name in ("landing.html", "controller.html", "docs.html", "guide.html"):
@@ -47,7 +55,10 @@ def build_pages() -> None:
         encoding="utf-8",
     )
     (DOCS / ".nojekyll").touch()
-    print(f"Built GitHub Pages site in {DOCS} (base={PAGES_BASE})")
+    if PAGES_CUSTOM_DOMAIN:
+        (DOCS / "CNAME").write_text(PAGES_CUSTOM_DOMAIN.strip() + "\n", encoding="utf-8")
+    mode = PAGES_BASE or "relative (custom domain + project pages)"
+    print(f"Built GitHub Pages site in {DOCS} (base={mode})")
 
 
 if __name__ == "__main__":

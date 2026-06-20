@@ -1,34 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/AityUahn/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AityUahn — Docs</title>
-  <link rel="icon" href="/AityUahn/logo.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/AityUahn/logo.svg" />
-  <link rel="stylesheet" href="/AityUahn/styles.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="logo.svg" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="app-header-brand">
-      <a href="/AityUahn/landing.html" class="app-logo-link" aria-label="AityUahn home">
-        <img src="/AityUahn/logo.svg" alt="" class="site-logo" height="28" />
+      <a href="landing.html" class="app-logo-link" aria-label="AityUahn home">
+        <img src="logo.svg" alt="" class="site-logo" height="28" />
       </a>
       <nav class="header-nav">
-        <a href="/AityUahn/landing.html">Home</a>
-        <a href="/AityUahn/controller.html">Controller</a>
-        <a href="/AityUahn/guide.html">Guide</a>
-        <a href="/AityUahn/docs.html" class="active">Docs</a>
+        <a href="landing.html">Home</a>
+        <a href="controller.html">Controller</a>
+        <a href="guide.html">Guide</a>
+        <a href="docs.html" class="active">Docs</a>
       </nav>
     </div>
   </header>
 
   <article class="docs-page">
     <h2>Quick start</h2>
-    <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="/AityUahn/controller.html">Controller</a> for kanban, tasks, forge, and agents.</p>
+    <p>AityUahn forges projects from prompts: idea → backlog → scaffold. Use the <a href="controller.html">Controller</a> for kanban, tasks, forge, and agents.</p>
     <p>The web UI can run on GitHub Pages, but <strong>forge, agents, sign-in, and team billing require the Python backend</strong> (<code>aityuahn serve</code>). Follow the steps below to download it, run it, and verify everything works.</p>
-    <p><strong>Full guide:</strong> <a id="docsTestLaunchGuide" href="/AityUahn/guide.html">Test &amp; Launch Guide</a> (browse) · <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">markdown</a></p>
+    <p><strong>Full guide:</strong> <a id="docsTestLaunchGuide" href="guide.html">Test &amp; Launch Guide</a> (browse) · <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">markdown</a></p>
 
     <h2 id="how-it-works">How it works</h2>
     <p>AityUahn splits into <strong>local forge</strong> (your PC) and <strong>cloud SaaS</strong> (Vercel + Neon):</p>
@@ -142,7 +141,7 @@ aityuahn version</pre>
     <p>Forge health should include <code>"ok": true</code>, <code>"role": "forge"</code>, and <code>"version"</code>. Cloud SaaS (if deployed) returns <code>"role": "saas"</code> — see <a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">DEPLOY_VERCEL.md</a>.</p>
     <p>Then connect the controller:</p>
     <ol>
-      <li>Open <a href="/AityUahn/controller.html">Controller</a> (local serve URL or GitHub Pages).</li>
+      <li>Open <a href="controller.html">Controller</a> (local serve URL or GitHub Pages).</li>
       <li>Paste <code id="docsDefaultApi">http://127.0.0.1:8765</code> into <strong>Local forge API</strong>.</li>
       <li>Click <strong>Connect</strong> — status should show <strong>Forge live</strong> (and a cloud pill if <code>defaultSaasApi</code> is set).</li>
     </ol>
@@ -150,7 +149,7 @@ aityuahn version</pre>
 
     <h2 id="test-ui">Test the program (UI)</h2>
     <h3>1. Offline demo (no backend)</h3>
-    <p>Open <a href="/AityUahn/controller.html?demo=1">Controller · demo mode</a> or click <strong>Offline demo</strong>. You should see sample kanban tasks. Drag tasks, switch views — forge and agents stay disabled until you connect a live API.</p>
+    <p>Open <a href="controller.html?demo=1">Controller · demo mode</a> or click <strong>Offline demo</strong>. You should see sample kanban tasks. Drag tasks, switch views — forge and agents stay disabled until you connect a live API.</p>
     <h3>2. Live dashboard</h3>
     <p>With <code>aityuahn serve --demo</code> running and connected:</p>
     <ul>
@@ -198,14 +197,14 @@ aityuahn test my-project</pre>
     <h2>Repository &amp; guides</h2>
     <ul>
       <li><a id="docsRepoFooter" href="https://github.com/HyperlinksSpace/AityUahn">github.com/HyperlinksSpace/AityUahn</a></li>
-      <li><a href="/AityUahn/guide.html">Test &amp; Launch Guide</a> (browse)</li>
+      <li><a href="guide.html">Test &amp; Launch Guide</a> (browse)</li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">TEST_AND_LAUNCH.md</a></li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">Deploy SaaS to Vercel + Neon</a></li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/INSTALL_RELEASE.md">Windows installer releases</a></li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/README.md">README</a></li>
     </ul>
   </article>
-  <script src="/AityUahn/setup.js"></script>
+  <script src="setup.js"></script>
   <script>
     (async () => {
       try {

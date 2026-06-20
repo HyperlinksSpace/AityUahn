@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/AityUahn/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AityUahn — Forge Controller</title>
-  <link rel="icon" href="/AityUahn/logo.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/AityUahn/logo.svg" />
-  <link rel="stylesheet" href="/AityUahn/styles.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="logo.svg" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="app-header-brand">
-      <a href="/AityUahn/landing.html" class="app-logo-link" aria-label="AityUahn home">
-        <img src="/AityUahn/logo.svg" alt="" class="site-logo" height="28" />
+      <a href="landing.html" class="app-logo-link" aria-label="AityUahn home">
+        <img src="logo.svg" alt="" class="site-logo" height="28" />
       </a>
       <p class="app-header-title">Forge Controller</p>
       <nav class="header-nav">
-        <a href="/AityUahn/landing.html">Home</a>
-        <a href="/AityUahn/controller.html" class="active">Controller</a>
-        <a href="/AityUahn/guide.html">Guide</a>
-        <a href="/AityUahn/docs.html">Docs</a>
+        <a href="landing.html">Home</a>
+        <a href="controller.html" class="active">Controller</a>
+        <a href="guide.html">Guide</a>
+        <a href="docs.html">Docs</a>
       </nav>
     </div>
     <div class="header-right">
@@ -41,13 +40,13 @@
         <a id="linkBackendExe" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest/download/aityuahn-installer.exe">Windows .exe</a>
         · <a id="linkBackendZip" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">ZIP</a>
         · <a id="linkBackendRepo" href="https://github.com/HyperlinksSpace/AityUahn">GitHub</a>
-        · <a href="/AityUahn/docs.html#install-one-line">One-line install</a>
+        · <a href="docs.html#install-one-line">One-line install</a>
       </p>
     </div>
     <button type="button" id="btnConnect" class="primary">Connect</button>
     <button type="button" id="btnCopyForgeUrl" title="Copy forge API URL">Copy URL</button>
     <button type="button" id="btnDemoMode">Offline demo</button>
-    <a href="/AityUahn/landing.html" class="muted" style="align-self:center;font-size:0.85rem">Sign in for team projects</a>
+    <a href="landing.html" class="muted" style="align-self:center;font-size:0.85rem">Sign in for team projects</a>
   </div>
 
   <div id="blockedOverlay" class="blocked-overlay hidden">
@@ -59,7 +58,7 @@
         <a id="overlayBackendZip" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/archive/refs/heads/main.zip">Download ZIP</a>
         <a id="overlayBackendRepo" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn">View on GitHub</a>
         <a id="overlayBackendRelease" class="setup-btn" href="https://github.com/HyperlinksSpace/AityUahn/releases/latest">All releases</a>
-        <a class="setup-btn" href="/AityUahn/docs.html#backend">Full setup guide</a>
+        <a class="setup-btn" href="docs.html#backend">Full setup guide</a>
       </div>
       <h3 class="setup-subhead">One-line install (recommended)</h3>
       <div class="install-cmd">
@@ -91,7 +90,7 @@
         <button type="button" id="btnOverlayDemo">Try offline demo</button>
         <button type="button" id="btnOverlaySignIn">Sign in / Register</button>
       </div>
-      <p id="setupNote" class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account. See <a href="/AityUahn/docs.html#test-ui">docs</a> for a full UI test checklist.</p>
+      <p id="setupNote" class="muted setup-note">After connecting, complete sign-in or registration in the dialog. Team features require an account. See <a href="docs.html#test-ui">docs</a> for a full UI test checklist.</p>
     </div>
   </div>
 
@@ -251,8 +250,8 @@
   </dialog>
 
   <div id="toast" class="toast"></div>
-  <script src="/AityUahn/auth.js"></script>
-  <script src="/AityUahn/setup.js"></script>
-  <script src="/AityUahn/app.js"></script>
+  <script src="auth.js"></script>
+  <script src="setup.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

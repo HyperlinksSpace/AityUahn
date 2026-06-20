@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/AityUahn/">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AityUahn — Test &amp; Launch Guide</title>
-  <link rel="icon" href="/AityUahn/logo.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/AityUahn/logo.svg" />
-  <link rel="stylesheet" href="/AityUahn/styles.css" />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="logo.svg" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="app-header-brand">
-      <a href="/AityUahn/landing.html" class="app-logo-link" aria-label="AityUahn home">
-        <img src="/AityUahn/logo.svg" alt="" class="site-logo" height="28" />
+      <a href="landing.html" class="app-logo-link" aria-label="AityUahn home">
+        <img src="logo.svg" alt="" class="site-logo" height="28" />
       </a>
       <p class="app-header-title">Test &amp; Launch</p>
       <nav class="header-nav">
-        <a href="/AityUahn/landing.html">Home</a>
-        <a href="/AityUahn/controller.html">Controller</a>
-        <a href="/AityUahn/docs.html">Docs</a>
-        <a href="/AityUahn/guide.html" class="active">Guide</a>
+        <a href="landing.html">Home</a>
+        <a href="controller.html">Controller</a>
+        <a href="docs.html">Docs</a>
+        <a href="guide.html" class="active">Guide</a>
       </nav>
     </div>
   </header>
@@ -76,7 +75,7 @@ aityuahn serve --demo</pre>
     <ol>
       <li>Edit <code>forge.yaml</code> — set <code>workspace_root</code></li>
       <li>Run <code>aityuahn serve --demo</code> — keep terminal open</li>
-      <li>Open <a href="/AityUahn/controller.html">Controller</a> at <code id="guideControllerUrl">http://127.0.0.1:8765/controller.html</code></li>
+      <li>Open <a href="controller.html">Controller</a> at <code id="guideControllerUrl">http://127.0.0.1:8765/controller.html</code></li>
       <li>Paste <code id="guideForgeUrl">http://127.0.0.1:8765</code> → <strong>Connect</strong> → <strong>Forge live</strong></li>
       <li>Optional cloud: deploy Vercel, set <code>defaultSaasApi</code> in config, rebuild Pages</li>
     </ol>
@@ -133,10 +132,10 @@ bash scripts/verify_setup.sh          # Git Bash
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/TEST_AND_LAUNCH.md">TEST_AND_LAUNCH.md</a> — full markdown guide (22-item checklist)</li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/DEPLOY_VERCEL.md">DEPLOY_VERCEL.md</a> — Vercel + Neon</li>
       <li><a href="https://github.com/HyperlinksSpace/AityUahn/blob/main/docs/INSTALL_RELEASE.md">INSTALL_RELEASE.md</a> — Windows exe releases</li>
-      <li><a href="/AityUahn/docs.html">Setup docs</a> — install, configure, run</li>
+      <li><a href="docs.html">Setup docs</a> — install, configure, run</li>
     </ul>
   </article>
-  <script src="/AityUahn/setup.js"></script>
+  <script src="setup.js"></script>
   <script>
     (async () => {
       try {

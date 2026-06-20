@@ -39,4 +39,8 @@ def test_build_pages(tmp_path: Path, monkeypatch):
     assert (root / "scripts" / "install.ps1").is_file()
     assert (root / "scripts" / "build_installer.py").is_file()
     assert (root / ".github" / "workflows" / "release-installer.yml").is_file()
-    assert '<base href="/AityUahn/">' in index
+    assert '<base href="/AityUahn/">' not in index
+    assert 'href="landing.css"' in index
+    assert 'src="logo.svg"' in index
+    assert 'href="/AityUahn/' not in index
+    assert (docs / "CNAME").is_file()
