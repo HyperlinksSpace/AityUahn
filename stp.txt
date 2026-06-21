@@ -1,0 +1,3 @@
+Delete form from the controller UI
+Connect button not working
+Merge Guide and Docs to Docs
